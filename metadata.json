@@ -1,0 +1,8 @@
+{
+  "name": "Lumina: AI-Powered Fragmented Thinking & Planning",
+  "description": "A next-generation note-taking ecosystem that transforms fragmented thoughts into organized wisdom, actionable plans, and creative breakthroughs using Gemini AI.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
