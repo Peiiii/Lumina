@@ -10,10 +10,10 @@ export const organizeFragments = async (fragments: Fragment[]) => {
   
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Analyze these fragmented thoughts and provide a synthesis. 
-    Categorize them into 'Themes', 'Action Items', and 'Potential Opportunities'.
+    contents: `请分析以下碎片化想法并提供综合整理。请务必使用中文回答。
+    将它们分类为“核心主题”、“待办事项”和“潜在机遇”。
     
-    Notes:
+    记录内容：
     ${context}`,
     config: {
       temperature: 0.7,
@@ -24,7 +24,7 @@ export const organizeFragments = async (fragments: Fragment[]) => {
           themes: { type: Type.ARRAY, items: { type: Type.STRING } },
           actionItems: { type: Type.ARRAY, items: { type: Type.STRING } },
           opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
-          summary: { type: Type.STRING }
+          summary: { type: Type.STRING, description: "一段对所有记录的综合分析总结，使用中文。" }
         },
         required: ["themes", "actionItems", "opportunities", "summary"]
       }
@@ -37,7 +37,9 @@ export const organizeFragments = async (fragments: Fragment[]) => {
 export const brainstormFromIdea = async (idea: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Brainstorm 5 innovative directions or enhancements for this idea: "${idea}"`,
+    contents: `请针对以下创意进行头脑风暴，提供5个创新方向或改进建议。请务必使用中文回答。
+    
+    创意内容："${idea}"`,
     config: {
       temperature: 1,
       responseMimeType: "application/json",
@@ -46,9 +48,9 @@ export const brainstormFromIdea = async (idea: string) => {
         items: {
           type: Type.OBJECT,
           properties: {
-            concept: { type: Type.STRING },
-            reasoning: { type: Type.STRING },
-            complexity: { type: Type.STRING, description: "Low, Medium, or High" }
+            concept: { type: Type.STRING, description: "建议的名称或核心概念" },
+            reasoning: { type: Type.STRING, description: "该方向的理由和潜在价值" },
+            complexity: { type: Type.STRING, description: "难度评估：Low, Medium, or High" }
           },
           required: ["concept", "reasoning", "complexity"]
         }
@@ -62,9 +64,9 @@ export const generateReview = async (fragments: Fragment[]) => {
   const context = fragments.map(f => f.content).join('\n');
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Write a reflective weekly review based on these notes. Focus on what was achieved and what needs focus next week.
+    contents: `请根据这些记录写一份深度的复盘总结。专注于取得了哪些进展，以及接下来的工作重点。请务必使用中文字体，风格要专业且具有启发性。
     
-    Notes:
+    记录内容：
     ${context}`,
     config: {
       temperature: 0.5,

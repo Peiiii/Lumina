@@ -1,32 +1,62 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lumina - Your AI Second Brain</title>
+    <title>Lumina - 智能碎片化笔记与复盘</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
+            font-family: 'Inter', "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: #F6F8FA;
+            color: #121212;
+            letter-spacing: -0.015em;
+            -webkit-font-smoothing: antialiased;
         }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
+        
+        /* 深度空间阴影 */
+        .shadow-spatial {
+            box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.04), 0 4px 8px -4px rgba(0, 0, 0, 0.02);
         }
-        ::-webkit-scrollbar-track {
-            background: transparent;
+        
+        .shadow-spatial-hover:hover {
+            box-shadow: 0 40px 64px -16px rgba(0, 0, 0, 0.08), 0 8px 16px -8px rgba(0, 0, 0, 0.04);
+            transform: translateY(-4px);
         }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+
+        /* 平滑动画 */
+        .transition-spatial {
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        /* 选中高亮 */
+        ::selection {
+            background: rgba(99, 102, 241, 0.15);
+            color: #4f46e5;
+        }
+
+        /* 隐藏滚动条 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 瀑布流补丁 */
+        .columns-1 { column-count: 1; }
+        @media (min-width: 768px) { .columns-2 { column-count: 2; } }
+        @media (min-width: 1024px) { .columns-3 { column-count: 3; } }
     </style>
 <script type="importmap">
 {
@@ -39,7 +69,7 @@
 }
 </script>
 </head>
-<body>
+<body class="antialiased">
     <div id="root"></div>
 </body>
 </html>
