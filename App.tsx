@@ -99,10 +99,10 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-[#FBFBFC] text-[#121212] overflow-hidden">
-      {/* 极简左侧导航 */}
+      {/* 侧边导航 */}
       <nav className="w-[76px] bg-white border-r border-[#F1F1F4] flex flex-col items-center py-10 z-20 flex-shrink-0">
         <div className="mb-14">
-          <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center shadow-lovart-lg hover:scale-105 transition-lovart cursor-pointer">
+          <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center shadow-lovart-lg hover:scale-105 transition-all duration-300 cursor-pointer">
              <SparklesIcon className="w-5 h-5 text-white" />
           </div>
         </div>
@@ -116,7 +116,7 @@ const App: React.FC = () => {
 
         <div className="mt-auto flex flex-col gap-6 items-center">
           <ToolBtn icon={<PlusIcon className="w-5 h-5" />} label="快速录入" tooltipPosition="right" />
-          <div className="w-9 h-9 rounded-2xl bg-[#F4F4F7] border border-[#EEEEF1] flex items-center justify-center text-[11px] font-bold text-black hover:bg-slate-200 transition-lovart cursor-pointer">
+          <div className="w-9 h-9 rounded-2xl bg-[#F4F4F7] border border-[#EEEEF1] flex items-center justify-center text-[11px] font-bold text-black hover:bg-slate-200 transition-all duration-300 cursor-pointer">
             W
           </div>
         </div>
@@ -128,7 +128,7 @@ const App: React.FC = () => {
           <div className="flex items-center gap-6">
             <h2 className="text-[14px] font-extrabold tracking-tight text-black flex items-center gap-2 cursor-pointer group">
               {getViewTitle()}
-              <svg className="w-3 h-3 text-slate-400 group-hover:text-black transition-lovart" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg className="w-3 h-3 text-slate-400 group-hover:text-black transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
               </svg>
             </h2>
@@ -164,7 +164,6 @@ const App: React.FC = () => {
               )}
             </div>
           )}
-          {/* 其他视图保持逻辑... */}
         </div>
 
         {/* 底部输入岛 */}
@@ -187,7 +186,7 @@ const App: React.FC = () => {
                 <button 
                   onClick={addFragment}
                   disabled={!inputValue.trim()}
-                  className="w-12 h-12 bg-black disabled:bg-[#F4F4F7] disabled:text-[#D4D4D8] text-white rounded-full flex items-center justify-center transition-lovart hover:bg-black/80 active:scale-90 shadow-lovart-md mr-1"
+                  className="w-12 h-12 bg-black disabled:bg-[#F4F4F7] disabled:text-[#D4D4D8] text-white rounded-full flex items-center justify-center transition-all duration-300 hover:bg-black/80 active:scale-90 shadow-lovart-md mr-1"
                 >
                   <SendIcon className="w-5 h-5" />
                 </button>
@@ -197,14 +196,14 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* 右侧 AI 助手面板 - 深度适配并防止提示超出 */}
+      {/* 右侧 AI 助手面板 */}
       <aside className="w-[360px] bg-white border-l border-[#F1F1F4] flex flex-col z-30 flex-shrink-0">
         <header className="h-[72px] flex items-center justify-end px-5 gap-1 flex-shrink-0 border-b border-[#FBFBFC]">
            <ToolBtn icon={<svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>} label="新思维" tooltipPosition="bottom" />
            <ToolBtn icon={<svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} label="历史" tooltipPosition="bottom" />
            <ToolBtn icon={<ShareIcon className="w-[18px] h-[18px]" />} label="协作" tooltipPosition="bottom" />
            <ToolBtn icon={<svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>} label="生成" tooltipPosition="bottom" />
-           <ToolBtn icon={<svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>} label="全屏" tooltipPosition="left" />
+           <ToolBtn icon={<svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>} label="全屏" tooltipPosition="bottom" />
         </header>
 
         <div className="flex-1 overflow-y-auto no-scrollbar px-7 py-8">
@@ -231,12 +230,12 @@ const App: React.FC = () => {
              />
           </div>
 
-          <div className="flex items-center gap-2 mb-8 text-slate-400 hover:text-black cursor-pointer transition-lovart text-[10px] font-black uppercase tracking-[0.2em] group">
-             <svg className="w-4 h-4 transition-lovart group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+          <div className="flex items-center gap-2 mb-8 text-slate-400 hover:text-black cursor-pointer transition-all duration-300 text-[10px] font-black uppercase tracking-[0.2em] group">
+             <svg className="w-4 h-4 transition-all duration-300 group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
              切换思维模板
           </div>
 
-          <div className="bg-[#F0F7FF] p-4 pr-3 rounded-2xl flex items-center justify-between group cursor-pointer hover:bg-[#E3EFFF] transition-lovart border border-[#E1EEFF] mb-10 shadow-sm">
+          <div className="bg-[#F0F7FF] p-4 pr-3 rounded-2xl flex items-center justify-between group cursor-pointer hover:bg-[#E3EFFF] transition-all duration-300 border border-[#E1EEFF] mb-10 shadow-sm">
              <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
                    <PlusIcon className="w-4 h-4" />
@@ -249,9 +248,9 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* AI 输入区 - 精确适配提示位置 */}
+        {/* AI 输入区 */}
         <div className="p-6 border-t border-[#F1F1F4] bg-white flex-shrink-0">
-          <div className="bg-[#FBFBFC] rounded-3xl p-4 border border-[#F1F1F4] focus-within:border-slate-200 transition-lovart">
+          <div className="bg-[#FBFBFC] rounded-3xl p-4 border border-[#F1F1F4] focus-within:border-slate-200 transition-all duration-300">
              <textarea 
                value={assistantInput}
                onChange={(e) => setAssistantInput(e.target.value)}
@@ -262,7 +261,7 @@ const App: React.FC = () => {
                 <div className="flex items-center gap-1">
                    <AssistantSmallBtn icon={<AttachmentIcon className="w-4 h-4" />} label="附件" />
                    <AssistantSmallBtn icon={<MentionIcon className="w-4 h-4" />} label="提及" />
-                   <div className="w-7 h-7 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center cursor-pointer hover:bg-blue-100 transition-lovart">
+                   <div className="w-7 h-7 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center cursor-pointer hover:bg-blue-100 transition-all duration-300">
                       <SparklesIcon className="w-4 h-4" />
                    </div>
                 </div>
@@ -271,7 +270,7 @@ const App: React.FC = () => {
                    <AssistantSmallBtn icon={<SearchIcon className="w-4 h-4" />} label="联想" />
                    <button 
                      disabled={!assistantInput.trim()}
-                     className={`w-8 h-8 rounded-full flex items-center justify-center transition-lovart ml-2 ${assistantInput.trim() ? 'bg-black text-white' : 'bg-[#F1F1F4] text-slate-300'}`}
+                     className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ml-2 ${assistantInput.trim() ? 'bg-black text-white' : 'bg-[#F1F1F4] text-slate-300'}`}
                    >
                      <SendIcon className="w-4 h-4" />
                    </button>
@@ -284,35 +283,38 @@ const App: React.FC = () => {
   );
 };
 
-// --- 精确复刻 Lovart 风格的辅助组件 ---
+// --- 辅助组件 ---
 
 type TooltipPos = 'top' | 'bottom' | 'left' | 'right';
 
 const ToolBtn = ({ icon, onClick, label, tooltipPosition = 'top' }: { icon: React.ReactNode, onClick?: () => void, label: string, tooltipPosition?: TooltipPos }) => {
+  const baseClasses = "absolute px-3.5 py-1.5 bg-[#121212] text-white text-[10.5px] font-bold rounded-2xl opacity-0 scale-95 pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:opacity-100 group-hover:scale-100 z-50 whitespace-nowrap shadow-xl";
+  
   const positionClasses = {
-    top: 'bottom-full left-1/2 -translate-x-1/2 mb-3 -translate-y-2 group-hover:translate-y-0',
-    bottom: 'top-full left-1/2 -translate-x-1/2 mt-3 translate-y-2 group-hover:translate-y-0',
-    left: 'right-full top-1/2 -translate-y-1/2 mr-3 -translate-x-2 group-hover:translate-x-0',
-    right: 'left-full top-1/2 -translate-y-1/2 ml-3 translate-x-2 group-hover:translate-x-0'
+    top: `${baseClasses} bottom-full left-1/2 -translate-x-1/2 mb-2.5 translate-y-2 group-hover:translate-y-0`,
+    bottom: `${baseClasses} top-full left-1/2 -translate-x-1/2 mt-2.5 -translate-y-2 group-hover:translate-y-0`,
+    left: `${baseClasses} right-full top-1/2 -translate-y-1/2 mr-2.5 translate-x-2 group-hover:translate-x-0`,
+    right: `${baseClasses} left-full top-1/2 -translate-y-1/2 ml-2.5 -translate-x-2 group-hover:translate-x-0`
   };
 
+  const arrowBase = "absolute w-2.5 h-2.5 bg-[#121212] rotate-45 rounded-[1px]";
   const arrowClasses = {
-    top: '-bottom-1 left-1/2 -translate-x-1/2',
-    bottom: '-top-1 left-1/2 -translate-x-1/2',
-    left: '-right-1 top-1/2 -translate-y-1/2',
-    right: '-left-1 top-1/2 -translate-y-1/2'
+    top: `${arrowBase} -bottom-1 left-1/2 -translate-x-1/2`,
+    bottom: `${arrowBase} -top-1 left-1/2 -translate-x-1/2`,
+    left: `${arrowBase} -right-1 top-1/2 -translate-y-1/2`,
+    right: `${arrowBase} -left-1 top-1/2 -translate-y-1/2`
   };
 
   return (
     <button 
       onClick={onClick}
-      className="p-2.5 text-black hover:bg-slate-100/80 rounded-xl transition-lovart active:scale-95 group relative flex items-center justify-center"
+      className="p-2.5 text-black hover:bg-slate-100/90 rounded-[14px] transition-all duration-200 active:scale-95 group relative flex items-center justify-center"
     >
-      {React.cloneElement(icon as React.ReactElement, { className: `${(icon as any).props.className} transition-lovart group-hover:scale-110` })}
+      {React.cloneElement(icon as React.ReactElement, { className: `${(icon as any).props.className} transition-transform duration-200 group-hover:scale-110` })}
       
-      <div className={`absolute px-3 py-1.5 bg-[#121212] text-white text-[10px] font-black rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-lovart z-50 whitespace-nowrap shadow-lovart-lg ${positionClasses[tooltipPosition]}`}>
+      <div className={positionClasses[tooltipPosition]}>
         {label}
-        <div className={`absolute w-2 h-2 bg-[#121212] rotate-45 rounded-sm ${arrowClasses[tooltipPosition]}`} />
+        <div className={arrowClasses[tooltipPosition]} />
       </div>
     </button>
   );
@@ -320,10 +322,10 @@ const ToolBtn = ({ icon, onClick, label, tooltipPosition = 'top' }: { icon: Reac
 
 const AssistantSmallBtn = ({ icon, label }: { icon: React.ReactNode, label: string }) => (
   <div className="relative group">
-    <button className="w-7 h-7 text-slate-400 hover:bg-slate-100 hover:text-black rounded-lg flex items-center justify-center transition-lovart">
+    <button className="w-7 h-7 text-slate-400 hover:bg-slate-100 hover:text-black rounded-lg flex items-center justify-center transition-all duration-200">
       {icon}
     </button>
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-2 py-1 bg-[#121212] text-white text-[9px] font-bold rounded-md opacity-0 group-hover:opacity-100 transition-lovart pointer-events-none z-50 whitespace-nowrap">
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 px-2 py-1 bg-[#121212] text-white text-[9px] font-bold rounded-lg opacity-0 scale-90 translate-y-1 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none z-50 whitespace-nowrap shadow-lg">
       {label}
     </div>
   </div>
@@ -332,15 +334,15 @@ const AssistantSmallBtn = ({ icon, label }: { icon: React.ReactNode, label: stri
 const LovartSidebarBtn = ({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) => (
   <button 
     onClick={onClick}
-    className={`w-11 h-11 rounded-xl flex items-center justify-center transition-lovart relative group ${active ? 'bg-slate-100 text-black shadow-sm' : 'text-black hover:bg-slate-50'}`}
+    className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 relative group ${active ? 'bg-slate-100 text-black shadow-sm' : 'text-black hover:bg-slate-50'}`}
   >
     {icon}
     {active && (
       <div className="absolute -left-6 w-1 h-1 bg-black rounded-full shadow-[0_0_8px_rgba(0,0,0,0.3)] animate-pulse" />
     )}
-    <div className="absolute left-[56px] px-3.5 py-2 bg-[#121212] text-white text-[10px] font-black rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-lovart -translate-x-2 group-hover:translate-x-0 z-50 whitespace-nowrap shadow-lovart-lg">
+    <div className="absolute left-[58px] px-3.5 py-1.5 bg-[#121212] text-white text-[10.5px] font-bold rounded-2xl opacity-0 scale-95 -translate-x-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-x-0 transition-all duration-300 pointer-events-none z-50 whitespace-nowrap shadow-xl">
       {label}
-      <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#121212] rotate-45 rounded-sm" />
+      <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#121212] rotate-45 rounded-[1px]" />
     </div>
   </button>
 );
@@ -348,15 +350,15 @@ const LovartSidebarBtn = ({ active, onClick, icon, label }: { active: boolean, o
 const PromptCard = ({ title, subtitle, images, onClick }: { title: string, subtitle: string, images: string[], onClick?: () => void }) => (
   <div 
     onClick={onClick}
-    className="bg-[#F8F9FA] p-5 pr-2 rounded-[2rem] flex items-center justify-between group cursor-pointer hover:bg-white hover:shadow-lovart-md border border-transparent hover:border-slate-100 transition-lovart overflow-hidden"
+    className="bg-[#F8F9FA] p-5 pr-2 rounded-[2rem] flex items-center justify-between group cursor-pointer hover:bg-white hover:shadow-lovart-md border border-transparent hover:border-slate-100 transition-all duration-400 overflow-hidden"
   >
     <div className="flex-1 pr-3">
-      <h4 className="text-[14px] font-black text-black mb-1 group-hover:text-blue-600 transition-lovart">{title}</h4>
+      <h4 className="text-[14px] font-black text-black mb-1 group-hover:text-blue-600 transition-colors duration-300">{title}</h4>
       <p className="text-slate-400 text-[10px] font-bold leading-tight line-clamp-1">{subtitle}</p>
     </div>
     <div className="flex -space-x-4 relative pr-2">
       {images.map((url, i) => (
-        <div key={i} className={`w-11 h-15 rounded-lg overflow-hidden border-2 border-white shadow-lovart-sm transition-lovart transform origin-bottom ${i === 0 ? 'rotate-[12deg] group-hover:rotate-0' : 'rotate-[-8deg] group-hover:rotate-0 scale-95'}`} style={{zIndex: images.length - i}}>
+        <div key={i} className={`w-11 h-15 rounded-lg overflow-hidden border-2 border-white shadow-lovart-sm transition-all duration-500 transform origin-bottom ${i === 0 ? 'rotate-[12deg] group-hover:rotate-0' : 'rotate-[-8deg] group-hover:rotate-0 scale-95'}`} style={{zIndex: images.length - i}}>
           <img src={url} alt="card" className="w-full h-full object-cover" />
         </div>
       ))}
@@ -369,21 +371,21 @@ const FragmentCard: React.FC<{ fragment: any, onDelete: any, onToggleTodo: any, 
   const cleanContent = fragment.content.replace(/^todo:\s*/i, '');
 
   return (
-    <div className="bg-white p-10 rounded-[4rem] border border-[#F1F1F4] shadow-lovart-sm hover:shadow-lovart-lg transition-lovart group relative">
+    <div className="bg-white p-10 rounded-[4rem] border border-[#F1F1F4] shadow-lovart-sm hover:shadow-lovart-lg transition-all duration-400 group relative">
       <div className="flex gap-7">
         {isTodo && (
           <button 
             onClick={onToggleTodo}
-            className={`w-7 h-7 mt-1.5 rounded-full border-[2px] flex-shrink-0 flex items-center justify-center transition-lovart ${fragment.status === 'completed' ? 'bg-black border-black' : 'border-[#E4E4E7] hover:border-black'}`}
+            className={`w-7 h-7 mt-1.5 rounded-full border-[2px] flex-shrink-0 flex items-center justify-center transition-all duration-200 ${fragment.status === 'completed' ? 'bg-black border-black' : 'border-[#E4E4E7] hover:border-black'}`}
           >
             {fragment.status === 'completed' && <PlusIcon className="w-4 h-4 text-white rotate-45 stroke-[2]" />}
           </button>
         )}
         <div className="flex-1">
-          <p className={`text-black leading-relaxed font-bold text-[1.15rem] tracking-tight transition-lovart ${fragment.status === 'completed' ? 'opacity-20 line-through' : ''}`}>
+          <p className={`text-black leading-relaxed font-bold text-[1.15rem] tracking-tight transition-all duration-300 ${fragment.status === 'completed' ? 'opacity-20 line-through' : ''}`}>
             {cleanContent}
           </p>
-          <div className="mt-10 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-lovart translate-y-3 group-hover:translate-y-0">
+          <div className="mt-10 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all duration-400 translate-y-3 group-hover:translate-y-0">
             <span className="text-[10px] font-black tracking-[0.2em] text-slate-300 uppercase">
               {new Date(fragment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
