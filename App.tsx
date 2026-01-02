@@ -7,6 +7,50 @@ import {
   AttachmentIcon, MentionIcon, SearchIcon, SendIcon, ShareIcon
 } from './components/Icons';
 
+// --- 初始 Mock 数据 ---
+const INITIAL_MOCK_DATA: Fragment[] = [
+  {
+    id: 'mock-1',
+    content: "下个季度想尝试用 WebGPU 重构渲染管线，提升移动端 3D 画布的流畅度。",
+    createdAt: Date.now() - 1000 * 60 * 60 * 2, // 2小时前
+    tags: ['技术探索', '工作'],
+    type: 'fragment',
+    status: 'pending'
+  },
+  {
+    id: 'mock-2',
+    content: "灵感：一个基于物理引擎的笔记应用，所有的碎片像原子一样可以互相吸引或排斥。",
+    createdAt: Date.now() - 1000 * 60 * 60 * 5, // 5小时前
+    tags: ['创意', '产品'],
+    type: 'fragment',
+    status: 'pending'
+  },
+  {
+    id: 'mock-3',
+    content: "准备周一的团队同步周报，重点讨论 AI 录入系统的准确率提升方案。",
+    createdAt: Date.now() - 1000 * 60 * 60 * 24, // 1天前
+    tags: ['待办', '管理'],
+    type: 'todo',
+    status: 'pending'
+  },
+  {
+    id: 'mock-4',
+    content: "书单推荐：卡洛·罗韦利的《时间的秩序》，探讨物理学与时间的本质。",
+    createdAt: Date.now() - 1000 * 60 * 60 * 28, // 1.2天前
+    tags: ['阅读', '自我提升'],
+    type: 'fragment',
+    status: 'pending'
+  },
+  {
+    id: 'mock-5',
+    content: "周六去那家新开的咖啡店试试他们的埃塞俄比亚手冲，顺便带上 iPad 写写代码。",
+    createdAt: Date.now() - 1000 * 60 * 60 * 48, // 2天前
+    tags: ['生活', '探店'],
+    type: 'todo',
+    status: 'pending'
+  }
+];
+
 // --- 一致性设计系统组件 ---
 
 type TooltipPos = 'top' | 'bottom' | 'left' | 'right';
@@ -87,13 +131,20 @@ const App: React.FC = () => {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<any>(null);
 
+  // 初始化加载，如果本地存储为空，则填充 Mock 数据
   useEffect(() => {
     const saved = localStorage.getItem('lumina_fragments');
-    if (saved) setFragments(JSON.parse(saved));
+    if (saved && JSON.parse(saved).length > 0) {
+      setFragments(JSON.parse(saved));
+    } else {
+      setFragments(INITIAL_MOCK_DATA);
+    }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('lumina_fragments', JSON.stringify(fragments));
+    if (fragments.length > 0) {
+      localStorage.setItem('lumina_fragments', JSON.stringify(fragments));
+    }
   }, [fragments]);
 
   const addFragment = (content: string = inputValue) => {
