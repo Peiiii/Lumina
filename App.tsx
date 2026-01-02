@@ -12,7 +12,7 @@ const INITIAL_MOCK_DATA: Fragment[] = [
   {
     id: 'mock-1',
     content: "下个季度想尝试用 WebGPU 重构渲染管线，提升移动端 3D 画布的流畅度。",
-    createdAt: Date.now() - 1000 * 60 * 60 * 2, // 2小时前
+    createdAt: Date.now() - 1000 * 60 * 60 * 2,
     tags: ['技术探索', '工作'],
     type: 'fragment',
     status: 'pending'
@@ -20,7 +20,7 @@ const INITIAL_MOCK_DATA: Fragment[] = [
   {
     id: 'mock-2',
     content: "灵感：一个基于物理引擎的笔记应用，所有的碎片像原子一样可以互相吸引或排斥。",
-    createdAt: Date.now() - 1000 * 60 * 60 * 5, // 5小时前
+    createdAt: Date.now() - 1000 * 60 * 60 * 5,
     tags: ['创意', '产品'],
     type: 'fragment',
     status: 'pending'
@@ -28,7 +28,7 @@ const INITIAL_MOCK_DATA: Fragment[] = [
   {
     id: 'mock-3',
     content: "准备周一的团队同步周报，重点讨论 AI 录入系统的准确率提升方案。",
-    createdAt: Date.now() - 1000 * 60 * 60 * 24, // 1天前
+    createdAt: Date.now() - 1000 * 60 * 60 * 24,
     tags: ['待办', '管理'],
     type: 'todo',
     status: 'pending'
@@ -36,7 +36,7 @@ const INITIAL_MOCK_DATA: Fragment[] = [
   {
     id: 'mock-4',
     content: "书单推荐：卡洛·罗韦利的《时间的秩序》，探讨物理学与时间的本质。",
-    createdAt: Date.now() - 1000 * 60 * 60 * 28, // 1.2天前
+    createdAt: Date.now() - 1000 * 60 * 60 * 28,
     tags: ['阅读', '自我提升'],
     type: 'fragment',
     status: 'pending'
@@ -44,7 +44,7 @@ const INITIAL_MOCK_DATA: Fragment[] = [
   {
     id: 'mock-5',
     content: "周六去那家新开的咖啡店试试他们的埃塞俄比亚手冲，顺便带上 iPad 写写代码。",
-    createdAt: Date.now() - 1000 * 60 * 60 * 48, // 2天前
+    createdAt: Date.now() - 1000 * 60 * 60 * 48,
     tags: ['生活', '探店'],
     type: 'todo',
     status: 'pending'
@@ -88,13 +88,13 @@ const IconButton = ({
     tint: 'bg-blue-50 text-blue-600 hover:bg-blue-100'
   };
 
-  const tooltipBase = "absolute px-2.5 py-1.5 bg-[#121212] text-white text-[9px] font-bold rounded-[12px] opacity-0 scale-90 pointer-events-none transition-all duration-200 z-[100] whitespace-nowrap shadow-2xl tracking-tight";
+  const tooltipBase = "absolute px-2 py-1 bg-[#121212] text-white text-[10px] font-bold rounded-lg opacity-0 scale-90 pointer-events-none transition-all duration-200 z-[100] whitespace-nowrap shadow-xl group-hover/tooltip:opacity-100 group-hover/tooltip:scale-100 group-hover/tooltip:translate-y-0 translate-y-1";
   
   const posMap = {
-    top: `${tooltipBase} bottom-full left-1/2 -translate-x-1/2 mb-2 translate-y-1 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0`,
-    bottom: `${tooltipBase} top-full left-1/2 -translate-x-1/2 mt-2 -translate-y-1 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0`,
-    left: `${tooltipBase} right-full top-1/2 -translate-y-1/2 mr-2 translate-x-1 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-x-0`,
-    right: `${tooltipBase} left-full top-1/2 -translate-y-1/2 ml-2 -translate-x-1 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-x-0`
+    top: `${tooltipBase} bottom-full left-1/2 -translate-x-1/2 mb-1.5`,
+    bottom: `${tooltipBase} top-full left-1/2 -translate-x-1/2 mt-1.5`,
+    left: `${tooltipBase} right-full top-1/2 -translate-y-1/2 mr-1.5`,
+    right: `${tooltipBase} left-full top-1/2 -translate-y-1/2 ml-1.5`
   };
 
   const arrowBase = "absolute w-1.5 h-1.5 bg-[#121212] rotate-45 rounded-[0.5px]";
@@ -109,7 +109,7 @@ const IconButton = ({
     <button 
       onClick={onClick}
       disabled={disabled}
-      className={`group relative flex items-center justify-center transition-all duration-200 active:scale-90 ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
+      className={`group/tooltip relative flex items-center justify-center transition-all duration-200 active:scale-90 ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
     >
       {React.cloneElement(icon as React.ReactElement, { className: 'w-full h-full stroke-[2]' })}
       <div className={posMap[tooltipPos]}>
@@ -129,9 +129,12 @@ const App: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [assistantInput, setAssistantInput] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiResult, setAiResult] = useState<any>(null);
 
-  // 初始化加载，如果本地存储为空，则填充 Mock 数据
+  // 分离不同视图的 AI 结果，支持共存和手动触发
+  const [planningData, setPlanningData] = useState<any>(null);
+  const [reviewData, setReviewData] = useState<any>(null);
+  const [stormData, setStormData] = useState<any>(null);
+
   useEffect(() => {
     const saved = localStorage.getItem('lumina_fragments');
     if (saved && JSON.parse(saved).length > 0) {
@@ -161,13 +164,25 @@ const App: React.FC = () => {
     setInputValue('');
   };
 
-  const handleOrganize = async () => {
+  const triggerOrganize = async () => {
     if (fragments.length === 0) return;
     setIsAiLoading(true);
-    setCurrentView(AppView.PLANNING);
     try {
       const result = await organizeFragments(fragments);
-      setAiResult(result);
+      setPlanningData(result);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const triggerReview = async () => {
+    if (fragments.length === 0) return;
+    setIsAiLoading(true);
+    try {
+      const result = await generateReview(fragments);
+      setReviewData(result);
     } catch (error) {
       console.error(error);
     } finally {
@@ -180,21 +195,7 @@ const App: React.FC = () => {
     setCurrentView(AppView.BRAINSTORM);
     try {
       const result = await brainstormFromIdea(idea);
-      setAiResult({ idea, storm: result });
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
-  const handleReview = async () => {
-    if (fragments.length === 0) return;
-    setIsAiLoading(true);
-    setCurrentView(AppView.REVIEW);
-    try {
-      const result = await generateReview(fragments);
-      setAiResult(result);
+      setStormData({ idea, storm: result });
     } catch (error) {
       console.error(error);
     } finally {
@@ -227,13 +228,13 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen bg-[#F4F4F7] text-[#121212] overflow-hidden p-4 gap-4">
       
-      {/* 侧边栏导航 */}
+      {/* 侧边栏导航 - 现在仅负责切换视图 */}
       <nav className="w-[58px] bg-white rounded-[24px] shadow-lovart-md border border-white flex flex-col items-center py-5 z-20 flex-shrink-0 self-center h-fit">
         <div className="flex flex-col gap-2.5">
           <IconButton size="md" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21l-9-9 9-9 9 9-9 9z" /></svg>} label="灵感流" active={currentView === AppView.FEED} onClick={() => setCurrentView(AppView.FEED)} tooltipPos="right" />
-          <IconButton size="md" icon={<ListIcon />} label="规划/待办" active={currentView === AppView.PLANNING} onClick={handleOrganize} tooltipPos="right" />
-          <IconButton size="md" icon={<BrainIcon />} label="创意工坊" active={currentView === AppView.BRAINSTORM} tooltipPos="right" />
-          <IconButton size="md" icon={<CalendarIcon />} label="深度复盘" active={currentView === AppView.REVIEW} onClick={handleReview} tooltipPos="right" />
+          <IconButton size="md" icon={<ListIcon />} label="规划/待办" active={currentView === AppView.PLANNING} onClick={() => setCurrentView(AppView.PLANNING)} tooltipPos="right" />
+          <IconButton size="md" icon={<BrainIcon />} label="创意工坊" active={currentView === AppView.BRAINSTORM} onClick={() => setCurrentView(AppView.BRAINSTORM)} tooltipPos="right" />
+          <IconButton size="md" icon={<CalendarIcon />} label="深度复盘" active={currentView === AppView.REVIEW} onClick={() => setCurrentView(AppView.REVIEW)} tooltipPos="right" />
           <div className="w-6 h-[1px] bg-slate-50 my-1 self-center" />
           <IconButton size="md" icon={<ShareIcon />} label="导出" tooltipPos="right" />
         </div>
@@ -293,28 +294,53 @@ const App: React.FC = () => {
                 </div>
               )}
             </div>
-          ) : (
+          ) : currentView === AppView.PLANNING ? (
             <div className="max-w-4xl mx-auto">
-                {currentView === AppView.PLANNING && aiResult && (
-                    <div className="grid grid-cols-2 gap-6 h-full">
-                        <div className="col-span-2 bg-white/60 p-8 rounded-[32px] border border-white mb-2">
-                             <h2 className="text-2xl font-black mb-2">规划摘要</h2>
-                             <p className="text-slate-500 font-bold leading-relaxed">{aiResult.summary}</p>
+                {!planningData ? (
+                    <ManualTriggerPlaceholder 
+                        icon={<ListIcon className="w-12 h-12" />}
+                        title="结构化你的思绪"
+                        description="AI 将分析你所有的碎片记录，将其整理为四象限任务看板，帮助你清晰掌控全局进度。"
+                        onTrigger={triggerOrganize}
+                        buttonText="开启 AI 组织规划"
+                    />
+                ) : (
+                    <div className="grid grid-cols-2 gap-6 h-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="col-span-2 bg-white/60 p-8 rounded-[32px] border border-white mb-2 flex justify-between items-start">
+                             <div>
+                                <h2 className="text-2xl font-black mb-2">规划摘要</h2>
+                                <p className="text-slate-500 font-bold leading-relaxed">{planningData.summary}</p>
+                             </div>
+                             <IconButton icon={<SparklesIcon />} label="重新生成" variant="tint" onClick={triggerOrganize} />
                         </div>
-                        <QuadrantBox title="重要 & 紧急" color="red" items={aiResult.actionItems?.slice(0, 3)} />
-                        <QuadrantBox title="重要 & 长远" color="blue" items={aiResult.themes} />
-                        <QuadrantBox title="琐碎 & 待办" color="zinc" items={aiResult.opportunities?.slice(0, 3)} />
-                        <QuadrantBox title="创意 & 备忘" color="orange" items={aiResult.opportunities?.slice(3, 6)} />
+                        <QuadrantBox title="重要 & 紧急" color="red" items={planningData.actionItems?.slice(0, 3)} />
+                        <QuadrantBox title="重要 & 长远" color="blue" items={planningData.themes} />
+                        <QuadrantBox title="琐碎 & 待办" color="zinc" items={planningData.opportunities?.slice(0, 3)} />
+                        <QuadrantBox title="创意 & 备忘" color="orange" items={planningData.opportunities?.slice(3, 6)} />
                     </div>
                 )}
-                {currentView === AppView.REVIEW && aiResult && (
-                    <div className="bg-white p-16 rounded-[48px] shadow-lovart-lg border border-white font-serif max-w-2xl mx-auto">
+            </div>
+          ) : currentView === AppView.REVIEW ? (
+            <div className="max-w-4xl mx-auto">
+                 {!reviewData ? (
+                    <ManualTriggerPlaceholder 
+                        icon={<CalendarIcon className="w-12 h-12" />}
+                        title="深度复盘总结"
+                        description="回顾最近的思维轨迹，AI 将为你提炼核心进展与接下来的行动建议。这不仅是总结，更是成长的反馈。"
+                        onTrigger={triggerReview}
+                        buttonText="生成复盘报告"
+                    />
+                ) : (
+                    <div className="bg-white p-16 rounded-[48px] shadow-lovart-lg border border-white font-serif max-w-2xl mx-auto relative animate-in zoom-in-95 duration-700">
+                        <div className="absolute top-8 right-8">
+                            <IconButton icon={<SparklesIcon />} label="刷新复盘" variant="ghost" onClick={triggerReview} />
+                        </div>
                         <div className="border-b-4 border-black pb-4 mb-8">
                             <span className="text-[10px] font-black font-sans tracking-[0.4em] uppercase">Weekly Digest</span>
                             <h2 className="text-4xl font-black font-sans leading-tight mt-1">深度复盘摘要报告</h2>
                         </div>
                         <div className="prose prose-lg prose-slate font-bold text-slate-700 leading-loose whitespace-pre-wrap first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left">
-                            {aiResult}
+                            {reviewData}
                         </div>
                         <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center font-sans">
                             <span className="text-[10px] font-black text-slate-300">© LUMINA AI SYSTEM</span>
@@ -322,14 +348,25 @@ const App: React.FC = () => {
                         </div>
                     </div>
                 )}
-                {currentView === AppView.BRAINSTORM && aiResult && (
-                    <div className="space-y-6 max-w-2xl mx-auto">
+            </div>
+          ) : currentView === AppView.BRAINSTORM && (
+            <div className="max-w-4xl mx-auto">
+                 {!stormData ? (
+                    <ManualTriggerPlaceholder 
+                        icon={<BrainIcon className="w-12 h-12" />}
+                        title="创意工坊"
+                        description="在灵感流中选择一个特定想法点击“发散”图标，或在此开启全域创意风暴。"
+                        onTrigger={() => setCurrentView(AppView.FEED)}
+                        buttonText="去画布选择创意"
+                    />
+                ) : (
+                    <div className="space-y-6 max-w-2xl mx-auto animate-in slide-in-from-right-8 duration-500">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-orange-200"><SparklesIcon className="w-5 h-5 text-white" /></div>
-                            <h2 className="text-2xl font-black">"{aiResult.idea}" 的灵感发散</h2>
+                            <h2 className="text-2xl font-black">"{stormData.idea}" 的灵感发散</h2>
                         </div>
                         <div className="grid gap-4">
-                            {aiResult.storm?.map((s: any, i: number) => (
+                            {stormData.storm?.map((s: any, i: number) => (
                                 <div key={i} className="p-6 bg-white rounded-[28px] border border-slate-50 hover:border-blue-100 hover:shadow-lovart-md transition-all group">
                                     <div className="flex items-center justify-between mb-3">
                                         <h4 className="font-black text-lg text-black group-hover:text-blue-600 transition-colors">{s.concept}</h4>
@@ -341,14 +378,6 @@ const App: React.FC = () => {
                         </div>
                     </div>
                 )}
-                <div className="flex justify-center mt-12">
-                   <button 
-                    onClick={() => setCurrentView(AppView.FEED)}
-                    className="px-8 py-3 bg-black text-white rounded-full font-black text-[11px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
-                  >
-                    返回主画布
-                  </button>
-                </div>
             </div>
           )}
         </div>
@@ -404,14 +433,17 @@ const App: React.FC = () => {
                 <span className="text-[8px] font-black uppercase tracking-widest">Active Assistant</span>
              </div>
              <h1 className="text-[20px] font-black text-black tracking-tight mb-1 leading-tight">AI 智能管家</h1>
-             <p className="text-slate-400 font-bold text-sm tracking-tight leading-snug">正在分析您的碎片记录，准备提供今日洞察。</p>
+             <p className="text-slate-400 font-bold text-sm tracking-tight leading-snug">手动触发深度整理，将零碎想法升华为结构性洞察。</p>
           </div>
 
           <div className="space-y-4 mb-8">
              <PromptCard 
                title="AI 自动化规划" 
-               subtitle="将散落的想法一键转化为结构化任务看板。" 
-               onClick={handleOrganize}
+               subtitle="分析全域碎片记录，一键生成任务象限看板。" 
+               onClick={() => {
+                   setCurrentView(AppView.PLANNING);
+                   if (!planningData) triggerOrganize();
+               }}
                images={[
                  'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=120&h=180&fit=crop',
                  'https://images.unsplash.com/photo-1517842645767-c639042777db?w=120&h=180&fit=crop'
@@ -419,8 +451,11 @@ const App: React.FC = () => {
              />
              <PromptCard 
                title="生成深度周报" 
-               subtitle="深度回顾过去 7 天的思维轨迹，寻找成长亮点。" 
-               onClick={handleReview}
+               subtitle="深度回顾过去思维轨迹，提炼成长亮点与建议。" 
+               onClick={() => {
+                    setCurrentView(AppView.REVIEW);
+                    if (!reviewData) triggerReview();
+               }}
                images={[
                  'https://images.unsplash.com/photo-1454165833767-027ffea9e77b?w=120&h=180&fit=crop',
                  'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=120&h=180&fit=crop'
@@ -463,6 +498,24 @@ const App: React.FC = () => {
     </div>
   );
 };
+
+// --- 手动触发引导组件 ---
+const ManualTriggerPlaceholder = ({ icon, title, description, onTrigger, buttonText }: { icon: React.ReactNode, title: string, description: string, onTrigger: () => void, buttonText: string }) => (
+    <div className="flex flex-col items-center justify-center py-32 text-center max-w-md mx-auto">
+        <div className="w-20 h-20 bg-white rounded-[32px] flex items-center justify-center text-slate-300 shadow-lovart-md mb-8 border border-white">
+            {icon}
+        </div>
+        <h2 className="text-2xl font-black mb-3 tracking-tight">{title}</h2>
+        <p className="text-slate-400 font-bold text-sm leading-relaxed mb-10">{description}</p>
+        <button 
+            onClick={onTrigger}
+            className="flex items-center gap-3 px-10 py-4 bg-black text-white rounded-full font-black text-[12px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10 group"
+        >
+            <SparklesIcon className="w-4 h-4 text-blue-400 group-hover:rotate-12 transition-transform" />
+            {buttonText}
+        </button>
+    </div>
+);
 
 // --- 精致卡片组件 ---
 
@@ -525,9 +578,9 @@ const CanvasCard: React.FC<{
                 Captured at {new Date(fragment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
           </div>
-          <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
-             <IconButton icon={<BrainIcon />} label="发散" size="sm" onClick={onBrainstorm} />
-             <IconButton icon={<PlusIcon />} label="移除" size="sm" onClick={onDelete} />
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+             <IconButton icon={<BrainIcon />} label="发散" size="sm" onClick={onBrainstorm} tooltipPos="top" />
+             <IconButton icon={<PlusIcon />} label="移除" size="sm" onClick={onDelete} tooltipPos="top" />
           </div>
       </div>
       <p className={`text-black leading-relaxed font-bold text-[1.25rem] tracking-tight mb-8 ${fragment.type === 'todo' && fragment.status === 'completed' ? 'line-through opacity-25' : ''}`}>
