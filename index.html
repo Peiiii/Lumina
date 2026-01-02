@@ -34,6 +34,15 @@
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.08);
         }
 
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(2.5); }
+        }
+        .animate-wave {
+            animation: wave 1s ease-in-out infinite;
+            transform-origin: center;
+        }
+
         /* 极致平滑的缩放与平移过渡 */
         * {
             transition: transform 0.25s cubic-bezier(0.2, 0, 0.1, 1), 

@@ -1,13 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
-import { Fragment, AppView } from './types';
+import React, { useState, useEffect, useRef } from 'react';
+import { Fragment, AppView, NoteType } from './types';
 import { brainstormFromIdea, organizeFragments, generateReview } from './services/geminiService';
 import { 
   PlusIcon, SparklesIcon, BrainIcon, ListIcon, CalendarIcon,
   AttachmentIcon, MentionIcon, SearchIcon, SendIcon, ShareIcon
 } from './components/Icons';
 
-// --- 一致性紧凑型设计系统组件 ---
+// --- 一致性设计系统组件 ---
 
 type TooltipPos = 'top' | 'bottom' | 'left' | 'right';
 
@@ -19,7 +19,8 @@ const IconButton = ({
   tooltipPos = 'top',
   size = 'md',
   variant = 'ghost',
-  disabled = false
+  disabled = false,
+  className = ""
 }: { 
   icon: React.ReactNode, 
   onClick?: () => void, 
@@ -28,7 +29,8 @@ const IconButton = ({
   tooltipPos?: TooltipPos,
   size?: 'sm' | 'md' | 'lg',
   variant?: 'ghost' | 'solid' | 'tint',
-  disabled?: boolean
+  disabled?: boolean,
+  className?: string
 }) => {
   const sizeClasses = {
     sm: 'w-7 h-7 rounded-lg p-1',
@@ -63,7 +65,7 @@ const IconButton = ({
     <button 
       onClick={onClick}
       disabled={disabled}
-      className={`group relative flex items-center justify-center transition-all duration-200 active:scale-90 ${sizeClasses[size]} ${variantClasses[variant]}`}
+      className={`group relative flex items-center justify-center transition-all duration-200 active:scale-90 ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
     >
       {React.cloneElement(icon as React.ReactElement, { className: 'w-full h-full stroke-[2]' })}
       <div className={posMap[tooltipPos]}>
@@ -80,6 +82,7 @@ const App: React.FC = () => {
   const [fragments, setFragments] = useState<Fragment[]>([]);
   const [currentView, setCurrentView] = useState<AppView>(AppView.FEED);
   const [inputValue, setInputValue] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
   const [assistantInput, setAssistantInput] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<any>(null);
@@ -93,14 +96,15 @@ const App: React.FC = () => {
     localStorage.setItem('lumina_fragments', JSON.stringify(fragments));
   }, [fragments]);
 
-  const addFragment = () => {
-    if (!inputValue.trim()) return;
+  const addFragment = (content: string = inputValue) => {
+    if (!content.trim()) return;
     const newFragment: Fragment = {
       id: Date.now().toString(),
-      content: inputValue,
+      content: content,
       createdAt: Date.now(),
       tags: [],
-      type: 'fragment'
+      type: 'fragment',
+      status: 'pending'
     };
     setFragments(prev => [newFragment, ...prev]);
     setInputValue('');
@@ -160,169 +164,202 @@ const App: React.FC = () => {
     }));
   };
 
+  const simulateRecording = () => {
+    setIsRecording(true);
+    setTimeout(() => {
+      setIsRecording(false);
+      const fakeVoiceResult = "我想在下周开始学习 WebGL，并将它应用在 Lumina 的画布可视化中。";
+      addFragment(fakeVoiceResult);
+    }, 2500);
+  };
+
   return (
     <div className="flex h-screen bg-[#F4F4F7] text-[#121212] overflow-hidden p-4 gap-4">
       
-      {/* 侧边栏导航：采用紧凑的垂直边距 */}
+      {/* 侧边栏导航 */}
       <nav className="w-[58px] bg-white rounded-[24px] shadow-lovart-md border border-white flex flex-col items-center py-5 z-20 flex-shrink-0 self-center h-fit">
         <div className="flex flex-col gap-2.5">
-          <IconButton size="md" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21l-9-9 9-9 9 9-9 9z" /></svg>} label="灵感画布" active={currentView === AppView.FEED} onClick={() => setCurrentView(AppView.FEED)} tooltipPos="right" />
-          <IconButton size="md" icon={<ListIcon />} label="规划管理" active={currentView === AppView.PLANNING} onClick={handleOrganize} tooltipPos="right" />
-          <IconButton size="md" icon={<BrainIcon />} label="风暴发散" active={currentView === AppView.BRAINSTORM} tooltipPos="right" />
-          <IconButton size="md" icon={<CalendarIcon />} label="复盘回顾" active={currentView === AppView.REVIEW} onClick={handleReview} tooltipPos="right" />
+          <IconButton size="md" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21l-9-9 9-9 9 9-9 9z" /></svg>} label="灵感流" active={currentView === AppView.FEED} onClick={() => setCurrentView(AppView.FEED)} tooltipPos="right" />
+          <IconButton size="md" icon={<ListIcon />} label="规划/待办" active={currentView === AppView.PLANNING} onClick={handleOrganize} tooltipPos="right" />
+          <IconButton size="md" icon={<BrainIcon />} label="创意工坊" active={currentView === AppView.BRAINSTORM} tooltipPos="right" />
+          <IconButton size="md" icon={<CalendarIcon />} label="深度复盘" active={currentView === AppView.REVIEW} onClick={handleReview} tooltipPos="right" />
           <div className="w-6 h-[1px] bg-slate-50 my-1 self-center" />
-          <IconButton size="md" icon={<ShareIcon />} label="导出共享" tooltipPos="right" />
+          <IconButton size="md" icon={<ShareIcon />} label="导出" tooltipPos="right" />
         </div>
       </nav>
 
       {/* 主画布区 */}
-      <main className="flex-1 relative overflow-hidden bg-white/40 rounded-[28px] border border-white/70 shadow-inner flex flex-col">
-        {/* 顶栏控制 */}
-        <header className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none z-20">
-          <div className="bg-white/95 backdrop-blur-xl px-2.5 py-1 rounded-[14px] shadow-sm border border-white pointer-events-auto flex items-center gap-2.5">
+      <main className="flex-1 relative overflow-hidden flex flex-col">
+        {/* 悬浮顶栏 */}
+        <header className="absolute top-4 left-0 right-0 flex justify-between items-center pointer-events-none z-20 px-4">
+          <div className="bg-white/95 backdrop-blur-xl px-2.5 py-1 rounded-[14px] shadow-lovart-sm border border-white/50 pointer-events-auto flex items-center gap-2.5">
              <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white font-black text-[8px]">LU</div>
              <div className="flex items-center gap-1 cursor-pointer group">
                 <span className="text-[12px] font-bold text-slate-800 tracking-tight">
                     {currentView === AppView.FEED ? '无限灵感画布' : 
-                     currentView === AppView.PLANNING ? 'AI 智能规划' : 
-                     currentView === AppView.REVIEW ? '深度复盘' : '创意中心'}
+                     currentView === AppView.PLANNING ? '个人规划象限' : 
+                     currentView === AppView.REVIEW ? '复盘·Weekly Review' : '创意风暴中心'}
                 </span>
                 <svg className="w-2 h-2 text-slate-300 group-hover:text-black transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M19 9l-7 7-7-7" /></svg>
              </div>
           </div>
-          <div className="bg-white/95 backdrop-blur-xl px-3 py-1 rounded-[14px] shadow-sm border border-white pointer-events-auto flex items-center gap-3">
-             <button className="text-slate-400 hover:text-black transition-colors p-0.5"><PlusIcon className="w-3 h-3 rotate-45" /></button>
-             <span className="text-[10px] font-black text-slate-500 tracking-tighter">100%</span>
-             <button className="text-slate-400 hover:text-black transition-colors p-0.5"><PlusIcon className="w-3 h-3" /></button>
+          <div className="bg-white/95 backdrop-blur-xl px-3 py-1 rounded-[14px] shadow-lovart-sm border border-white/50 pointer-events-auto flex items-center gap-3">
+             <span className="text-[10px] font-black text-slate-400 tracking-tighter uppercase">Syncing...</span>
+             <IconButton size="sm" icon={<SearchIcon />} label="检索" tooltipPos="bottom" />
           </div>
         </header>
 
         {/* 画布核心内容 */}
-        <div className="flex-1 overflow-y-auto no-scrollbar p-12 pt-28 pb-48">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-12 pt-24 pb-48">
           {isAiLoading ? (
-            <div className="flex flex-col items-center justify-center h-full space-y-3 animate-pulse">
-                <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center">
-                    <SparklesIcon className="w-5 h-5 text-white" />
+            <div className="flex flex-col items-center justify-center h-full space-y-3">
+                <div className="relative">
+                  <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center animate-bounce">
+                      <SparklesIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="absolute -inset-2 bg-blue-400/20 blur-xl rounded-full animate-pulse" />
                 </div>
-                <p className="text-xs font-bold text-slate-400">Gemini 正在重构思维...</p>
+                <p className="text-xs font-black text-slate-400 tracking-widest uppercase">AI Architecting...</p>
             </div>
           ) : currentView === AppView.FEED ? (
-            <div className="max-w-3xl mx-auto space-y-6">
+            <div className="max-w-3xl mx-auto space-y-12">
               {fragments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-40 opacity-5 select-none grayscale scale-110">
                    <SparklesIcon className="w-14 h-14 mb-4" />
-                   <p className="text-[9px] font-black tracking-[0.4em] uppercase">Capture Your Spark</p>
+                   <p className="text-[9px] font-black tracking-[0.4em] uppercase">Ready for your ideas</p>
                 </div>
               ) : (
-                <div className="grid gap-6">
-                  {fragments.map(f => (
-                    <CanvasCard key={f.id} fragment={f} onDelete={() => deleteFragment(f.id)} onToggleTodo={() => toggleTodo(f.id)} onBrainstorm={() => handleBrainstorm(f.content)} />
+                <div className="grid gap-8">
+                  {fragments.map((f, i) => (
+                    <CanvasCard 
+                      key={f.id} 
+                      fragment={f} 
+                      onDelete={() => deleteFragment(f.id)} 
+                      onToggleTodo={() => toggleTodo(f.id)} 
+                      onBrainstorm={() => handleBrainstorm(f.content)} 
+                    />
                   ))}
                 </div>
               )}
             </div>
           ) : (
-            <div className="max-w-2xl mx-auto bg-white p-10 rounded-[32px] shadow-lovart-lg border border-white min-h-[400px]">
+            <div className="max-w-4xl mx-auto">
                 {currentView === AppView.PLANNING && aiResult && (
-                    <div className="space-y-8">
-                        <div className="flex items-center gap-2.5 mb-4">
-                            <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center"><CalendarIcon className="w-3.5 h-3.5 text-white" /></div>
-                            <h2 className="text-xl font-black">AI 智能规划建议</h2>
+                    <div className="grid grid-cols-2 gap-6 h-full">
+                        <div className="col-span-2 bg-white/60 p-8 rounded-[32px] border border-white mb-2">
+                             <h2 className="text-2xl font-black mb-2">规划摘要</h2>
+                             <p className="text-slate-500 font-bold leading-relaxed">{aiResult.summary}</p>
                         </div>
-                        <p className="text-slate-500 font-bold text-sm leading-relaxed">{aiResult.summary}</p>
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-300">核心主题</h3>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {aiResult.themes?.map((t: string, i: number) => <span key={i} className="px-2.5 py-1 bg-slate-50 rounded-lg text-[11px] font-bold border border-slate-100">{t}</span>)}
-                                </div>
-                            </div>
-                            <div className="space-y-3">
-                                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-300">行动事项</h3>
-                                <div className="space-y-1.5">
-                                    {aiResult.actionItems?.map((a: string, i: number) => <div key={i} className="flex items-center gap-2 text-[12px] font-bold"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />{a}</div>)}
-                                </div>
-                            </div>
-                        </div>
+                        <QuadrantBox title="重要 & 紧急" color="red" items={aiResult.actionItems?.slice(0, 3)} />
+                        <QuadrantBox title="重要 & 长远" color="blue" items={aiResult.themes} />
+                        <QuadrantBox title="琐碎 & 待办" color="zinc" items={aiResult.opportunities?.slice(0, 3)} />
+                        <QuadrantBox title="创意 & 备忘" color="orange" items={aiResult.opportunities?.slice(3, 6)} />
                     </div>
                 )}
                 {currentView === AppView.REVIEW && aiResult && (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center"><BrainIcon className="w-3.5 h-3.5 text-white" /></div>
-                            <h2 className="text-xl font-black">复盘总结</h2>
+                    <div className="bg-white p-16 rounded-[48px] shadow-lovart-lg border border-white font-serif max-w-2xl mx-auto">
+                        <div className="border-b-4 border-black pb-4 mb-8">
+                            <span className="text-[10px] font-black font-sans tracking-[0.4em] uppercase">Weekly Digest</span>
+                            <h2 className="text-4xl font-black font-sans leading-tight mt-1">深度复盘摘要报告</h2>
                         </div>
-                        <div className="prose prose-sm prose-slate font-bold text-slate-600 leading-[1.7] whitespace-pre-wrap">
+                        <div className="prose prose-lg prose-slate font-bold text-slate-700 leading-loose whitespace-pre-wrap first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left">
                             {aiResult}
+                        </div>
+                        <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center font-sans">
+                            <span className="text-[10px] font-black text-slate-300">© LUMINA AI SYSTEM</span>
+                            <IconButton icon={<ShareIcon />} label="分享导出" size="sm" variant="tint" />
                         </div>
                     </div>
                 )}
                 {currentView === AppView.BRAINSTORM && aiResult && (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center"><SparklesIcon className="w-3.5 h-3.5 text-white" /></div>
-                            <h2 className="text-xl font-black">创意发散</h2>
+                    <div className="space-y-6 max-w-2xl mx-auto">
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-orange-200"><SparklesIcon className="w-5 h-5 text-white" /></div>
+                            <h2 className="text-2xl font-black">"{aiResult.idea}" 的灵感发散</h2>
                         </div>
-                        <div className="grid gap-3">
+                        <div className="grid gap-4">
                             {aiResult.storm?.map((s: any, i: number) => (
-                                <div key={i} className="p-4 bg-slate-50/50 rounded-2xl border border-white hover:bg-white transition-all group">
-                                    <div className="flex items-center justify-between mb-1.5">
-                                        <h4 className="font-black text-sm text-blue-600">{s.concept}</h4>
-                                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${s.complexity === 'High' ? 'bg-red-50 text-red-400' : 'bg-green-50 text-green-400'}`}>{s.complexity}</span>
+                                <div key={i} className="p-6 bg-white rounded-[28px] border border-slate-50 hover:border-blue-100 hover:shadow-lovart-md transition-all group">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="font-black text-lg text-black group-hover:text-blue-600 transition-colors">{s.concept}</h4>
+                                        <span className={`text-[10px] font-black px-2 py-1 rounded-full ${s.complexity === 'High' ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>{s.complexity}</span>
                                     </div>
-                                    <p className="text-[12px] font-bold text-slate-400 leading-snug">{s.reasoning}</p>
+                                    <p className="text-[14px] font-bold text-slate-400 leading-relaxed">{s.reasoning}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
                 )}
-                <button 
-                  onClick={() => setCurrentView(AppView.FEED)}
-                  className="mt-10 px-6 py-2 bg-black text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
-                >
-                  返回画布
-                </button>
+                <div className="flex justify-center mt-12">
+                   <button 
+                    onClick={() => setCurrentView(AppView.FEED)}
+                    className="px-8 py-3 bg-black text-white rounded-full font-black text-[11px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
+                  >
+                    返回主画布
+                  </button>
+                </div>
             </div>
           )}
         </div>
 
-        {/* 底部悬浮录入：保持紧凑高度 */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 pointer-events-none">
-          <div className="bg-white/95 backdrop-blur-2xl p-2 pl-6 rounded-full shadow-lovart-lg flex items-center gap-4 border border-white pointer-events-auto hover:shadow-2xl transition-all">
-            <input 
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addFragment()}
-              placeholder="记录灵光一闪..."
-              className="flex-1 bg-transparent border-none focus:outline-none text-[14px] font-bold text-black py-2 placeholder:text-slate-300"
-            />
-            <IconButton icon={<SendIcon />} label="提交记录" variant="solid" size="md" tooltipPos="top" onClick={addFragment} />
+        {/* 底部悬浮录入 */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-full max-w-xl px-4 pointer-events-none">
+          <div className={`bg-white/95 backdrop-blur-2xl p-2.5 pl-7 rounded-full shadow-lovart-lg flex items-center gap-4 border border-white pointer-events-auto transition-all ${isRecording ? 'ring-4 ring-red-400/20' : ''}`}>
+            {isRecording ? (
+              <div className="flex-1 flex items-center gap-2">
+                 <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="w-1 bg-red-400 rounded-full animate-wave" style={{height: `${10 + Math.random() * 20}px`, animationDelay: `${i * 0.1}s`}} />
+                    ))}
+                 </div>
+                 <span className="text-xs font-black text-red-500 tracking-widest uppercase ml-2">Recording Voice...</span>
+              </div>
+            ) : (
+              <input 
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addFragment()}
+                placeholder="捕捉灵光一闪，或点击麦克风说出想法..."
+                className="flex-1 bg-transparent border-none focus:outline-none text-[14px] font-bold text-black py-2 placeholder:text-slate-300"
+              />
+            )}
+            <div className="flex items-center gap-1">
+              <IconButton 
+                icon={isRecording ? <div className="w-2 h-2 bg-white rounded-sm" /> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><path d="M12 19v4m-4 0h8"/></svg>} 
+                label={isRecording ? "停止录音" : "语音捕捉"} 
+                variant={isRecording ? "solid" : "ghost"}
+                className={isRecording ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+                size="md" 
+                onClick={simulateRecording}
+              />
+              <IconButton icon={<SendIcon />} label="提交记录" variant="solid" size="md" onClick={() => addFragment()} />
+            </div>
           </div>
         </div>
       </main>
 
-      {/* 右侧 AI 助手面板：全面紧凑化 */}
+      {/* 右侧 AI 助手面板 */}
       <aside className="w-[340px] bg-white rounded-[28px] shadow-lovart-md border border-white flex flex-col z-30 flex-shrink-0 overflow-hidden">
         <header className="h-[60px] flex items-center justify-end px-4 gap-0.5 flex-shrink-0 border-b border-slate-50/50">
-           <IconButton icon={<PlusIcon />} label="重置对话" size="sm" tooltipPos="bottom" />
-           <IconButton icon={<SearchIcon />} label="搜索" size="sm" tooltipPos="bottom" />
-           <IconButton icon={<ShareIcon />} label="导出" size="sm" tooltipPos="bottom" />
-           <IconButton icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>} label="极简" size="sm" tooltipPos="left" />
+           <IconButton icon={<ListIcon />} label="历史记录" size="sm" tooltipPos="bottom" />
+           <IconButton icon={<ShareIcon />} label="协同" size="sm" tooltipPos="bottom" />
+           <IconButton icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>} label="时间线" size="sm" tooltipPos="left" />
         </header>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar px-5 py-5">
+        <div className="flex-1 overflow-y-auto no-scrollbar px-5 py-6">
           <div className="mb-8">
-             <div className="w-9 h-9 bg-black rounded-full flex items-center justify-center mb-4 shadow-md transition-all hover:scale-105">
-                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+             <div className="inline-flex items-center gap-2 px-2 py-1 bg-black text-white rounded-full mb-4">
+                <SparklesIcon className="w-3 h-3" />
+                <span className="text-[8px] font-black uppercase tracking-widest">Active Assistant</span>
              </div>
-             <h1 className="text-[18px] font-black text-black tracking-tight mb-1 leading-tight">AI 智能管家</h1>
-             <p className="text-slate-400 font-bold text-sm tracking-tight">将碎片记录转化为有序生产力。</p>
+             <h1 className="text-[20px] font-black text-black tracking-tight mb-1 leading-tight">AI 智能管家</h1>
+             <p className="text-slate-400 font-bold text-sm tracking-tight leading-snug">正在分析您的碎片记录，准备提供今日洞察。</p>
           </div>
 
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4 mb-8">
              <PromptCard 
-               title="极速规划" 
-               subtitle="深度分析画布想法，一键排期。" 
+               title="AI 自动化规划" 
+               subtitle="将散落的想法一键转化为结构化任务看板。" 
                onClick={handleOrganize}
                images={[
                  'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=120&h=180&fit=crop',
@@ -330,8 +367,8 @@ const App: React.FC = () => {
                ]}
              />
              <PromptCard 
-               title="深度复盘" 
-               subtitle="回顾历程，总结成长路径。" 
+               title="生成深度周报" 
+               subtitle="深度回顾过去 7 天的思维轨迹，寻找成长亮点。" 
                onClick={handleReview}
                images={[
                  'https://images.unsplash.com/photo-1454165833767-027ffea9e77b?w=120&h=180&fit=crop',
@@ -340,48 +377,34 @@ const App: React.FC = () => {
              />
           </div>
 
-          <div className="flex items-center gap-1.5 mb-6 text-slate-300 hover:text-black cursor-pointer transition-all text-[9px] font-black uppercase tracking-[0.2em] group">
-             <svg className="w-3 h-3 transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-             AI 模型：GEMINI 3 PRO
-          </div>
-
-          <div className="bg-[#F0F7FF] p-4 rounded-[20px] flex items-center justify-between group cursor-pointer hover:bg-[#E3EFFF] transition-all border border-[#E1EEFF] mb-8 shadow-sm">
-             <div className="flex items-center gap-3">
-                <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-                   <PlusIcon className="w-4 h-4" />
-                </div>
-                <div className="text-[9px] font-black text-blue-700 tracking-tight leading-tight uppercase">
-                   升级 LUMINA PRO<br/><span className="opacity-40 font-bold">获取 1K 解析力</span>
-                </div>
+          <div className="p-4 bg-slate-50 rounded-2xl border border-white mb-8">
+             <div className="flex items-center justify-between mb-3">
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">今日活跃度</span>
+                <span className="text-[9px] font-black text-black">86%</span>
              </div>
-             <IconButton size="sm" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" /></svg>} label="隐藏" />
+             <div className="h-1.5 bg-white rounded-full overflow-hidden">
+                <div className="h-full bg-black w-[86%] rounded-full" />
+             </div>
           </div>
         </div>
 
-        {/* AI 输入区：紧凑表单 */}
+        {/* AI 输入区 */}
         <div className="p-4 border-t border-slate-50 flex-shrink-0">
           <div className="bg-[#FBFBFC] rounded-[22px] p-4 border border-slate-100 transition-all focus-within:shadow-md focus-within:border-slate-200">
              <textarea 
                value={assistantInput}
                onChange={(e) => setAssistantInput(e.target.value)}
-               placeholder="描述你想如何整理想法..."
-               className="w-full bg-transparent border-none focus:outline-none resize-none h-20 text-[13px] font-semibold text-black placeholder:text-slate-300 leading-snug mb-3 scrollbar-hide"
+               placeholder="对话 AI，整理你的混乱思绪..."
+               className="w-full bg-transparent border-none focus:outline-none resize-none h-16 text-[13px] font-semibold text-black placeholder:text-slate-300 leading-snug mb-2 scrollbar-hide"
              />
              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-0.5">
-                   <IconButton icon={<AttachmentIcon />} label="附件" size="sm" tooltipPos="top" />
-                   <IconButton icon={<MentionIcon />} label="提及" size="sm" tooltipPos="top" />
-                   <IconButton icon={<SparklesIcon />} label="增强" size="sm" variant="tint" tooltipPos="top" />
-                </div>
-                <div className="flex items-center gap-0.5">
-                   <IconButton icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>} label="风暴" size="sm" tooltipPos="top" />
-                   <button 
-                     disabled={!assistantInput.trim()}
-                     className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ml-1 shadow-sm ${assistantInput.trim() ? 'bg-black text-white hover:scale-105' : 'bg-[#F1F1F4] text-slate-300'}`}
-                   >
-                     <svg className="w-4 h-4 rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 19l7-7-7-7M5 12h14" /></svg>
-                   </button>
-                </div>
+                <IconButton icon={<SparklesIcon />} label="灵感激发" size="sm" variant="tint" tooltipPos="top" />
+                <button 
+                  disabled={!assistantInput.trim()}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${assistantInput.trim() ? 'bg-black text-white hover:scale-105' : 'bg-[#F1F1F4] text-slate-300'}`}
+                >
+                  <svg className="w-4 h-4 rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 19l7-7-7-7M5 12h14" /></svg>
+                </button>
              </div>
           </div>
         </div>
@@ -390,7 +413,26 @@ const App: React.FC = () => {
   );
 };
 
-// --- 精致级紧凑卡片组件 ---
+// --- 精致卡片组件 ---
+
+const QuadrantBox = ({ title, color, items }: { title: string, color: 'red'|'blue'|'zinc'|'orange', items: any[] }) => {
+    const colors = {
+        red: 'bg-red-50/50 border-red-100 text-red-600',
+        blue: 'bg-blue-50/50 border-blue-100 text-blue-600',
+        zinc: 'bg-slate-50/50 border-slate-200 text-slate-600',
+        orange: 'bg-orange-50/50 border-orange-100 text-orange-600'
+    };
+    return (
+        <div className={`p-6 rounded-[28px] border-2 ${colors[color]} flex flex-col min-h-[220px]`}>
+            <h3 className="text-[11px] font-black uppercase tracking-widest mb-4 opacity-70">{title}</h3>
+            <div className="flex-1 space-y-2">
+                {items?.map((item, i) => (
+                    <div key={i} className="p-3 bg-white/80 rounded-xl text-[13px] font-bold shadow-sm border border-white/50">{item}</div>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const PromptCard = ({ title, subtitle, images, onClick }: { title: string, subtitle: string, images: string[], onClick?: () => void }) => (
   <div 
@@ -421,31 +463,37 @@ const CanvasCard: React.FC<{
   onToggleTodo: () => void,
   onBrainstorm: () => void 
 }> = ({ fragment, onDelete, onToggleTodo, onBrainstorm }) => (
-  <div className={`bg-white p-8 rounded-[36px] border transition-all duration-400 group relative ${fragment.type === 'todo' ? 'border-blue-50 shadow-lovart-sm' : 'border-white shadow-lovart-md hover:shadow-lovart-lg'}`}>
+  <div className={`group bg-white p-8 rounded-[40px] border transition-all duration-500 relative ${fragment.type === 'todo' ? 'border-blue-50 shadow-lovart-sm ring-1 ring-blue-50' : 'border-white shadow-lovart-md hover:shadow-lovart-lg'}`}>
     <div className="flex-1">
-      <div className="flex items-center gap-2 mb-4">
-          {fragment.type === 'todo' && (
-              <div className="px-1.5 py-0.5 bg-blue-50 text-blue-500 text-[8px] font-black uppercase tracking-widest rounded">TODO</div>
-          )}
-          <span className="text-[8px] font-black tracking-[0.1em] text-slate-200 uppercase">
-            CAPTURED {new Date(fragment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </span>
+      <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+              {fragment.type === 'todo' && (
+                  <div className="px-2 py-0.5 bg-blue-500 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded">TODO</div>
+              )}
+              <div className="px-2 py-0.5 bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-[0.1em] rounded">
+                Captured at {new Date(fragment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
+          </div>
+          <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+             <IconButton icon={<BrainIcon />} label="发散" size="sm" onClick={onBrainstorm} />
+             <IconButton icon={<PlusIcon />} label="移除" size="sm" onClick={onDelete} />
+          </div>
       </div>
-      <p className={`text-black leading-relaxed font-bold text-[1.15rem] tracking-tight mb-6 ${fragment.type === 'todo' && fragment.status === 'completed' ? 'line-through opacity-25' : ''}`}>
+      <p className={`text-black leading-relaxed font-bold text-[1.25rem] tracking-tight mb-8 ${fragment.type === 'todo' && fragment.status === 'completed' ? 'line-through opacity-25' : ''}`}>
         {fragment.content}
       </p>
-      <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
             <button 
               onClick={onToggleTodo}
-              className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${fragment.type === 'todo' ? 'bg-blue-500 text-white' : 'bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-500'}`}
+              className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${fragment.type === 'todo' ? 'bg-blue-500 text-white shadow-lg shadow-blue-100' : 'bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600'}`}
             >
-                {fragment.type === 'todo' ? 'Done' : '+ 待办'}
+                {fragment.type === 'todo' ? 'Mark Completed' : '+ Convert to To-Do'}
             </button>
         </div>
-        <div className="flex items-center gap-1">
-          <IconButton icon={<BrainIcon />} label="发散" size="sm" tooltipPos="top" onClick={onBrainstorm} />
-          <IconButton icon={<PlusIcon />} label="移除" size="sm" tooltipPos="top" onClick={onDelete} />
+        <div className="flex -space-x-1.5">
+           <div className="w-5 h-5 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center text-[8px] font-black text-purple-600" title="AI Insight Generated">✨</div>
+           {fragment.type === 'todo' && <div className="w-5 h-5 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[8px] font-black text-blue-600">L</div>}
         </div>
       </div>
     </div>
