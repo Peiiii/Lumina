@@ -8,9 +8,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --space-tight: 12px;
+            --space-base: 16px;
+            --space-loose: 24px;
+            --panel-bg: #FFFFFF;
+            --app-bg: #F4F4F7;
+        }
+
         body {
             font-family: 'Inter', -apple-system, "PingFang SC", sans-serif;
-            background-color: #F4F4F7;
+            background-color: var(--app-bg);
             color: #121212;
             -webkit-font-smoothing: antialiased;
             letter-spacing: -0.015em;
@@ -28,9 +36,11 @@
 
         /* 极致平滑的缩放与平移过渡 */
         * {
-            transition: transform 0.3s cubic-bezier(0.2, 0, 0.1, 1), 
+            transition: transform 0.25s cubic-bezier(0.2, 0, 0.1, 1), 
                         background-color 0.2s ease, 
                         opacity 0.2s ease,
+                        padding 0.2s ease,
+                        margin 0.2s ease,
                         box-shadow 0.3s ease;
         }
 
