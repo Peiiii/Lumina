@@ -68,6 +68,7 @@ export const IconButton = ({
   size = 'md',
   variant = 'ghost',
   disabled = false,
+  isRound = false,
   className = ""
 }: { 
   icon: React.ReactNode, 
@@ -78,12 +79,13 @@ export const IconButton = ({
   size?: 'sm' | 'md' | 'lg',
   variant?: 'ghost' | 'solid' | 'tint',
   disabled?: boolean,
+  isRound?: boolean,
   className?: string
 }) => {
   const sizeClasses = {
-    sm: 'w-7 h-7 rounded-lg p-1.5',
-    md: 'w-9 h-9 rounded-xl p-2',
-    lg: 'w-11 h-11 rounded-2xl p-2.5'
+    sm: `w-7 h-7 ${isRound ? 'rounded-full' : 'rounded-lg'} p-1.5`,
+    md: `w-9 h-9 ${isRound ? 'rounded-full' : 'rounded-xl'} p-2`,
+    lg: `w-11 h-11 ${isRound ? 'rounded-full' : 'rounded-2xl'} p-2.5`
   };
 
   const variantClasses = {

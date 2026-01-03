@@ -111,6 +111,7 @@ const AppContent: React.FC = () => {
                 variant={isRecording ? "solid" : "ghost"}
                 className={isRecording ? "bg-red-500 hover:bg-red-600 text-white" : ""}
                 size="md" 
+                isRound
                 onClick={presenter.fragments.simulateRecording}
               />
               <IconButton 
@@ -118,6 +119,7 @@ const AppContent: React.FC = () => {
                 label="提交记录" 
                 variant="solid" 
                 size="md" 
+                isRound
                 disabled={!inputValue.trim()} 
                 onClick={() => presenter.fragments.addFragment()} 
               />
@@ -193,10 +195,11 @@ const AppContent: React.FC = () => {
              <div className="flex items-center justify-between">
                 <IconButton icon={<SparklesIcon />} label="灵感激发" size="sm" variant="tint" tooltipPos="top" />
                 <IconButton 
-                  icon={<svg className="rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 19l7-7-7-7M5 12h14" /></svg>} 
+                  icon={<SendIcon />} 
                   label="发送" 
                   variant="solid" 
                   size="sm" 
+                  isRound
                   disabled={!assistantInput.trim()} 
                   onClick={() => {/* 此处可扩展对话逻辑 */}} 
                 />

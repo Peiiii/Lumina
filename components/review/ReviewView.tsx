@@ -28,14 +28,14 @@ export const ReviewView = () => {
               <IconButton icon={<SparklesIcon />} label="刷新复盘" variant="ghost" onClick={presenter.ai.triggerReview} />
           </div>
           <div className="border-b-4 border-black pb-4 mb-8">
-              <span className="text-[10px] font-black font-sans tracking-[0.4em] uppercase">Weekly Digest</span>
+              <span className="text-[10px] font-black font-sans tracking-[0.4em] uppercase">每周精选</span>
               <h2 className="text-4xl font-black font-sans leading-tight mt-1">深度复盘摘要报告</h2>
           </div>
           <div className="prose prose-lg prose-slate font-bold text-slate-700 leading-loose whitespace-pre-wrap first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left">
               {reviewData}
           </div>
           <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center font-sans">
-              <span className="text-[10px] font-black text-slate-300">© LUMINA AI SYSTEM</span>
+              <span className="text-[10px] font-black text-slate-300">© LUMINA 智能系统</span>
               <IconButton icon={<ShareIcon />} label="分享导出" size="sm" variant="tint" />
           </div>
         </div>
