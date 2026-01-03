@@ -74,3 +74,22 @@ export const generateReview = async (fragments: Fragment[]) => {
   });
   return response.text;
 };
+
+export const sendChatMessage = async (history: { role: 'user' | 'model', content: string }[], message: string) => {
+  const contents = history.map(h => ({
+    role: h.role === 'user' ? 'user' : 'model' as any,
+    parts: [{ text: h.content }]
+  }));
+  
+  contents.push({ role: 'user', parts: [{ text: message }] });
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents,
+    config: {
+      systemInstruction: "你是一个名为 Lumina 的个人思维助手。你擅长整理碎片化想法、提供创意建议和协助个人规划。请用简洁、专业且具有启发性的中文回答。语气应当友好、充满好奇心且富有洞察力。如果你不知道某些背景信息，可以礼貌地询问用户。"
+    }
+  });
+
+  return response.text;
+};

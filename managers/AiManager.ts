@@ -1,7 +1,8 @@
+
 import { useAppStore } from '../stores/appStore';
 import { useAiStore } from '../stores/aiStore';
 import { useFragmentsStore } from '../stores/fragmentsStore';
-import { organizeFragments, generateReview, brainstormFromIdea } from '../services/geminiService';
+import { organizeFragments, generateReview, brainstormFromIdea, sendChatMessage } from '../services/geminiService';
 import { AppView } from '../types';
 
 export class AiManager {
@@ -45,5 +46,37 @@ export class AiManager {
     } finally {
       useAppStore.setState({ isAiLoading: false });
     }
+  };
+
+  sendChatMessage = async () => {
+    const { assistantInput } = useAppStore.getState();
+    const { chatHistory } = useAiStore.getState();
+    if (!assistantInput.trim()) return;
+
+    const userMessage = assistantInput;
+    useAppStore.setState({ assistantInput: '' });
+    
+    // Optimistic update
+    useAiStore.setState({ 
+      chatHistory: [...chatHistory, { role: 'user', content: userMessage }] 
+    });
+
+    try {
+      const response = await sendChatMessage(chatHistory, userMessage);
+      if (response) {
+        useAiStore.setState((state) => ({ 
+          chatHistory: [...state.chatHistory, { role: 'model', content: response }] 
+        }));
+      }
+    } catch (error) {
+      console.error('Chat failed:', error);
+      useAiStore.setState((state) => ({ 
+        chatHistory: [...state.chatHistory, { role: 'model', content: "抱歉，由于网络波动，我暂时无法回应。请稍后再试。" }] 
+      }));
+    }
+  };
+
+  clearChat = () => {
+    useAiStore.setState({ chatHistory: [] });
   };
 }
