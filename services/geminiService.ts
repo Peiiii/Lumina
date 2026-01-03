@@ -93,7 +93,8 @@ export const sendChatMessage = async (
   const finalPrompt = `${fragmentsContext}\n\n用户消息: ${message}`;
   contents.push({ role: 'user', parts: [{ text: finalPrompt }] });
 
-  const response = await ai.models.generateContent({
+  // 升级为流式输出
+  const responseStream = await ai.models.generateContentStream({
     model: 'gemini-3-flash-preview',
     contents,
     config: {
@@ -102,9 +103,10 @@ export const sendChatMessage = async (
 1. 协助用户整理、联系和深度分析他们的碎片化想法。
 2. 当用户问及他们的记录、规划或过去的想法时，基于提供的【思维画布数据】给出精准回答。
 3. 语气简洁、专业且具有洞察力。
-4. 如果用户询问的内容在记录中找不到，请如实告知，并尝试引导用户补充。`
+4. 如果用户询问的内容在记录中找不到，请如实告知，并尝试引导用户补充。
+5. 你的回复支持 Markdown 格式，鼓励使用列表、加粗等方式提升可读性。`
     }
   });
 
-  return response.text;
+  return responseStream;
 };
