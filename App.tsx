@@ -202,7 +202,7 @@ const AppContent: React.FC = () => {
             <div className="space-y-6">
               {chatHistory.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-1 duration-300`}>
-                  <div className={`max-w-[85%] px-4 py-3 rounded-[20px] text-[13px] font-bold leading-relaxed ${
+                  <div className={`max-w-[85%] px-4 py-3 rounded-[14px] text-[13px] font-bold leading-relaxed ${
                     msg.role === 'user' 
                       ? 'bg-black text-white rounded-br-none' 
                       : 'bg-[#F4F4F7] text-slate-700 rounded-bl-none border border-white shadow-lovart-sm'
@@ -215,7 +215,7 @@ const AppContent: React.FC = () => {
               {/* 思考状态气泡 */}
               {isChatLoading && (
                 <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="bg-[#F4F4F7] border border-white shadow-lovart-sm px-4 py-3 rounded-[20px] rounded-bl-none flex items-center gap-1.5">
+                  <div className="bg-[#F4F4F7] border border-white shadow-lovart-sm px-4 py-3 rounded-[14px] rounded-bl-none flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                     <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
