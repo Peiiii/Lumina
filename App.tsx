@@ -47,7 +47,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-[#F4F4F7] text-[#121212] overflow-hidden p-4 gap-4">
-      {/* 侧边栏 */}
+      {/* 侧边栏导航 */}
       <nav className="w-[58px] bg-white rounded-[24px] shadow-lovart-md border border-white flex flex-col items-center py-5 z-20 flex-shrink-0 self-center h-fit">
         <div className="flex flex-col gap-2.5">
           <IconButton size="md" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21l-9-9 9-9 9 9-9 9z" /></svg>} label="灵感流" active={currentView === AppView.FEED} onClick={() => presenter.app.setCurrentView(AppView.FEED)} tooltipPos="right" />
@@ -99,7 +99,7 @@ const AppContent: React.FC = () => {
               <input 
                 value={inputValue}
                 onChange={(e) => presenter.app.setInputValue(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && presenter.fragments.addFragment()}
+                onKeyDown={(e) => e.key === 'Enter' && inputValue.trim() && presenter.fragments.addFragment()}
                 placeholder="捕捉灵光一闪，或点击麦克风说出想法..."
                 className="flex-1 bg-transparent border-none focus:outline-none text-[14px] font-bold text-black py-2 placeholder:text-slate-300"
               />
@@ -113,7 +113,14 @@ const AppContent: React.FC = () => {
                 size="md" 
                 onClick={presenter.fragments.simulateRecording}
               />
-              <IconButton icon={<SendIcon />} label="提交记录" variant="solid" size="md" onClick={() => presenter.fragments.addFragment()} />
+              <IconButton 
+                icon={<SendIcon />} 
+                label="提交记录" 
+                variant="solid" 
+                size="md" 
+                disabled={!inputValue.trim()} 
+                onClick={() => presenter.fragments.addFragment()} 
+              />
             </div>
           </div>
         </div>
@@ -185,12 +192,14 @@ const AppContent: React.FC = () => {
              />
              <div className="flex items-center justify-between">
                 <IconButton icon={<SparklesIcon />} label="灵感激发" size="sm" variant="tint" tooltipPos="top" />
-                <button 
-                  disabled={!assistantInput.trim()}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${assistantInput.trim() ? 'bg-black text-white hover:scale-105' : 'bg-[#F1F1F4] text-slate-300'}`}
-                >
-                  <svg className="w-4 h-4 rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 19l7-7-7-7M5 12h14" /></svg>
-                </button>
+                <IconButton 
+                  icon={<svg className="rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 19l7-7-7-7M5 12h14" /></svg>} 
+                  label="发送指令" 
+                  variant="solid" 
+                  size="sm" 
+                  disabled={!assistantInput.trim()} 
+                  onClick={() => {/* AI 对话逻辑可以在此扩展 */}} 
+                />
              </div>
           </div>
         </div>

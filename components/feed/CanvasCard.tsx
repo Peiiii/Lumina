@@ -2,7 +2,7 @@
 import React from 'react';
 import { usePresenter } from '../../context/LuminaContext';
 import { Fragment } from '../../types';
-import { IconButton } from '../UI';
+import { IconButton, Button, Badge } from '../UI';
 import { BrainIcon, TrashIcon } from '../Icons';
 
 export const CanvasCard: React.FC<{ fragment: Fragment }> = ({ fragment }) => {
@@ -13,12 +13,10 @@ export const CanvasCard: React.FC<{ fragment: Fragment }> = ({ fragment }) => {
       <div className="flex-1">
         <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
-                {fragment.type === 'todo' && (
-                    <div className="px-2 py-0.5 bg-blue-500 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded">TODO</div>
-                )}
-                <div className="px-2 py-0.5 bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-[0.1em] rounded">
+                {fragment.type === 'todo' && <Badge variant="blue">TODO</Badge>}
+                <Badge>
                   Captured at {new Date(fragment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
+                </Badge>
             </div>
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
                <IconButton icon={<BrainIcon />} label="发散" size="sm" onClick={() => presenter.ai.handleBrainstorm(fragment.content)} tooltipPos="top" />
@@ -36,14 +34,13 @@ export const CanvasCard: React.FC<{ fragment: Fragment }> = ({ fragment }) => {
           {fragment.content}
         </p>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-              <button 
-                onClick={() => presenter.fragments.toggleTodo(fragment.id)}
-                className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${fragment.type === 'todo' ? 'bg-blue-500 text-white shadow-lg shadow-blue-100' : 'bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600'}`}
-              >
-                  {fragment.type === 'todo' ? 'Mark Completed' : '+ Convert to To-Do'}
-              </button>
-          </div>
+          <Button 
+            variant={fragment.type === 'todo' ? 'primary' : 'ghost'} 
+            size="sm"
+            onClick={() => presenter.fragments.toggleTodo(fragment.id)}
+          >
+            {fragment.type === 'todo' ? 'Mark Completed' : '+ Convert to To-Do'}
+          </Button>
           <div className="flex -space-x-1.5">
              <div className="w-5 h-5 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center text-[8px] font-black text-purple-600" title="AI Insight Generated">✨</div>
              {fragment.type === 'todo' && <div className="w-5 h-5 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[8px] font-black text-blue-600">L</div>}

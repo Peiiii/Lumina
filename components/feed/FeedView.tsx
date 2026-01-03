@@ -3,11 +3,12 @@ import React from 'react';
 import { useFragmentsStore } from '../../stores/fragmentsStore';
 import { CanvasCard } from './CanvasCard';
 import { SparklesIcon } from '../Icons';
+import { ViewContainer } from '../UI';
 
 export const FeedView = () => {
   const { fragments } = useFragmentsStore();
   return (
-    <div className={`max-w-3xl mx-auto w-full ${fragments.length > 0 ? 'pb-48 space-y-12' : 'h-full flex items-center justify-center'}`}>
+    <ViewContainer className={fragments.length > 0 ? 'pb-48 space-y-12' : 'h-full flex items-center justify-center'}>
       {fragments.length === 0 ? (
         <div className="flex flex-col items-center justify-center opacity-5 select-none grayscale scale-110">
            <SparklesIcon className="w-14 h-14 mb-4" />
@@ -20,6 +21,6 @@ export const FeedView = () => {
           ))}
         </div>
       )}
-    </div>
+    </ViewContainer>
   );
 };

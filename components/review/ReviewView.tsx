@@ -2,7 +2,7 @@
 import React from 'react';
 import { useAiStore } from '../../stores/aiStore';
 import { usePresenter } from '../../context/LuminaContext';
-import { IconButton, ManualTriggerPlaceholder } from '../UI';
+import { IconButton, ManualTriggerPlaceholder, ViewContainer } from '../UI';
 import { CalendarIcon, SparklesIcon, ShareIcon } from '../Icons';
 
 export const ReviewView = () => {
@@ -22,7 +22,7 @@ export const ReviewView = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto pb-48">
+    <ViewContainer maxWidth="4xl" className="pb-48">
         <div className="bg-white p-16 rounded-[48px] shadow-lovart-lg border border-white font-serif relative animate-in zoom-in-95 duration-700">
           <div className="absolute top-8 right-8">
               <IconButton icon={<SparklesIcon />} label="刷新复盘" variant="ghost" onClick={presenter.ai.triggerReview} />
@@ -39,6 +39,6 @@ export const ReviewView = () => {
               <IconButton icon={<ShareIcon />} label="分享导出" size="sm" variant="tint" />
           </div>
         </div>
-    </div>
+    </ViewContainer>
   );
 };
