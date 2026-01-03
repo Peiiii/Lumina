@@ -6,6 +6,7 @@ import { useAppStore } from '../../stores/appStore';
 import { useAiStore } from '../../stores/aiStore';
 import { IconButton } from '../ui/Button';
 import { PromptCard } from '../ui/Card';
+import { Markdown } from '../ui/Markdown';
 import { SparklesIcon, TrashIcon, ShareIcon, SendIcon } from '../Icons';
 
 export const AssistantPanel: React.FC = () => {
@@ -86,12 +87,16 @@ export const AssistantPanel: React.FC = () => {
           <div className="space-y-6">
             {chatHistory.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-1 duration-300`}>
-                <div className={`max-w-[85%] px-4 py-3 rounded-[14px] text-[13px] font-bold leading-relaxed ${
+                <div className={`max-w-[85%] px-4 py-3 rounded-[14px] ${
                   msg.role === 'user' 
                     ? 'bg-black text-white rounded-br-none' 
                     : 'bg-[#F4F4F7] text-slate-700 rounded-bl-none border border-white shadow-lovart-sm'
                 }`}>
-                  {msg.content}
+                  {msg.role === 'user' ? (
+                    <div className="text-[13px] font-bold leading-relaxed">{msg.content}</div>
+                  ) : (
+                    <Markdown content={msg.content} />
+                  )}
                 </div>
               </div>
             ))}
