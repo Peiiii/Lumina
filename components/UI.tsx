@@ -37,18 +37,12 @@ export const IconButton = ({
     tint: 'bg-blue-50 text-blue-600 hover:bg-blue-100'
   };
 
-  // 基础样式：移除了会冲突的 translate-x-0
   const tooltipBase = "absolute px-2.5 py-1.5 bg-[#121212] text-white text-[11px] font-bold rounded-xl opacity-0 scale-90 pointer-events-none transition-all duration-200 z-[100] whitespace-nowrap shadow-2xl group-hover/tooltip:opacity-100 group-hover/tooltip:scale-100";
   
-  // 核心修复：在 hover 状态下显式保留居中偏移量 (-translate-x-1/2 或 -translate-y-1/2)
   const posMap = {
-    // 顶部：水平居中。初始状态稍微往下靠，hover 时回到标准位置
     top: `${tooltipBase} bottom-full left-1/2 -translate-x-1/2 translate-y-1 mb-2.5 group-hover/tooltip:translate-y-0`,
-    // 底部：水平居中。初始状态稍微往上靠，hover 时回到标准位置
     bottom: `${tooltipBase} top-full left-1/2 -translate-x-1/2 -translate-y-1 mt-2.5 group-hover/tooltip:translate-y-0`,
-    // 左侧：垂直居中。初始状态稍微往右靠，hover 时回到标准位置
     left: `${tooltipBase} right-full top-1/2 -translate-y-1/2 translate-x-1 mr-2.5 group-hover/tooltip:translate-x-0`,
-    // 右侧：垂直居中。初始状态稍微往左靠，hover 时回到标准位置
     right: `${tooltipBase} left-full top-1/2 -translate-y-1/2 -translate-x-1 ml-2.5 group-hover/tooltip:translate-x-0`
   };
 
@@ -76,7 +70,7 @@ export const IconButton = ({
 };
 
 export const ManualTriggerPlaceholder = ({ icon, title, description, onTrigger, buttonText }: { icon: React.ReactNode, title: string, description: string, onTrigger: () => void, buttonText: string }) => (
-    <div className="flex flex-col items-center justify-center py-32 text-center max-w-md mx-auto">
+    <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto min-h-[400px]">
         <div className="w-20 h-20 bg-white rounded-[32px] flex items-center justify-center text-slate-300 shadow-lovart-md mb-8 border border-white">
             {icon}
         </div>

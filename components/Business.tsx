@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useFragmentsStore } from '../stores/fragmentsStore';
 import { useAiStore } from '../stores/aiStore';
@@ -51,9 +52,9 @@ export const CanvasCard: React.FC<{ fragment: Fragment }> = ({ fragment }) => {
 export const FeedView = () => {
   const { fragments } = useFragmentsStore();
   return (
-    <div className="max-w-3xl mx-auto space-y-12">
+    <div className={`max-w-3xl mx-auto ${fragments.length > 0 ? 'pb-48 space-y-12' : 'h-full flex items-center'}`}>
       {fragments.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-40 opacity-5 select-none grayscale scale-110">
+        <div className="flex-1 flex flex-col items-center justify-center opacity-5 select-none grayscale scale-110">
            <SparklesIcon className="w-14 h-14 mb-4" />
            <p className="text-[9px] font-black tracking-[0.4em] uppercase">Ready for your ideas</p>
         </div>
@@ -85,7 +86,7 @@ export const PlanningView = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto grid grid-cols-2 gap-6 h-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="max-w-4xl mx-auto grid grid-cols-2 gap-6 pb-48 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="col-span-2 bg-white/60 p-8 rounded-[32px] border border-white mb-2 flex justify-between items-start">
            <div>
               <h2 className="text-2xl font-black mb-2">规划摘要</h2>
@@ -118,21 +119,23 @@ export const ReviewView = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-16 rounded-[48px] shadow-lovart-lg border border-white font-serif relative animate-in zoom-in-95 duration-700">
-      <div className="absolute top-8 right-8">
-          <IconButton icon={<SparklesIcon />} label="刷新复盘" variant="ghost" onClick={presenter.ai.triggerReview} />
-      </div>
-      <div className="border-b-4 border-black pb-4 mb-8">
-          <span className="text-[10px] font-black font-sans tracking-[0.4em] uppercase">Weekly Digest</span>
-          <h2 className="text-4xl font-black font-sans leading-tight mt-1">深度复盘摘要报告</h2>
-      </div>
-      <div className="prose prose-lg prose-slate font-bold text-slate-700 leading-loose whitespace-pre-wrap first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left">
-          {reviewData}
-      </div>
-      <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center font-sans">
-          <span className="text-[10px] font-black text-slate-300">© LUMINA AI SYSTEM</span>
-          <IconButton icon={<ShareIcon />} label="分享导出" size="sm" variant="tint" />
-      </div>
+    <div className="max-w-4xl mx-auto pb-48">
+        <div className="bg-white p-16 rounded-[48px] shadow-lovart-lg border border-white font-serif relative animate-in zoom-in-95 duration-700">
+          <div className="absolute top-8 right-8">
+              <IconButton icon={<SparklesIcon />} label="刷新复盘" variant="ghost" onClick={presenter.ai.triggerReview} />
+          </div>
+          <div className="border-b-4 border-black pb-4 mb-8">
+              <span className="text-[10px] font-black font-sans tracking-[0.4em] uppercase">Weekly Digest</span>
+              <h2 className="text-4xl font-black font-sans leading-tight mt-1">深度复盘摘要报告</h2>
+          </div>
+          <div className="prose prose-lg prose-slate font-bold text-slate-700 leading-loose whitespace-pre-wrap first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left">
+              {reviewData}
+          </div>
+          <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center font-sans">
+              <span className="text-[10px] font-black text-slate-300">© LUMINA AI SYSTEM</span>
+              <IconButton icon={<ShareIcon />} label="分享导出" size="sm" variant="tint" />
+          </div>
+        </div>
     </div>
   );
 };
@@ -154,7 +157,7 @@ export const BrainstormView = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in slide-in-from-right-8 duration-500">
+    <div className="max-w-4xl mx-auto pb-48 animate-in slide-in-from-right-8 duration-500">
       <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-orange-200"><SparklesIcon className="w-5 h-5 text-white" /></div>
           <h2 className="text-2xl font-black">"{stormData.idea}" 的灵感发散</h2>
