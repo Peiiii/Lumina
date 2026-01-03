@@ -9,17 +9,17 @@ import {
   SearchIcon, SendIcon, ShareIcon
 } from './components/Icons';
 import { IconButton, PromptCard } from './components/UI';
-import { 
-  FeedView, 
-  PlanningView, 
-  ReviewView, 
-  BrainstormView 
-} from './components/business';
+
+// 导入重组后的功能领域组件
+import { FeedView } from './components/feed/FeedView';
+import { PlanningView } from './components/planning/PlanningView';
+import { ReviewView } from './components/review/ReviewView';
+import { BrainstormView } from './components/brainstorm/BrainstormView';
 
 const AppContent: React.FC = () => {
   const presenter = usePresenter();
   const { currentView, isAiLoading, isRecording, inputValue, assistantInput } = useAppStore();
-  const { planningData, reviewData, stormData } = useAiStore();
+  const { planningData, reviewData } = useAiStore();
 
   const renderView = () => {
     if (isAiLoading) {
