@@ -9,7 +9,12 @@ import {
   SearchIcon, SendIcon, ShareIcon
 } from './components/Icons';
 import { IconButton, PromptCard } from './components/UI';
-import { FeedView, PlanningView, ReviewView, BrainstormView } from './components/Business';
+import { 
+  FeedView, 
+  PlanningView, 
+  ReviewView, 
+  BrainstormView 
+} from './components/business';
 
 const AppContent: React.FC = () => {
   const presenter = usePresenter();
