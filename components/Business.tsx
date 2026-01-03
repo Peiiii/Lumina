@@ -5,7 +5,7 @@ import { useAiStore } from '../stores/aiStore';
 import { usePresenter } from '../context/LuminaContext';
 import { Fragment } from '../types';
 import { IconButton, ManualTriggerPlaceholder, QuadrantBox } from './UI';
-import { BrainIcon, PlusIcon, SparklesIcon, ListIcon, CalendarIcon, ShareIcon } from './Icons';
+import { BrainIcon, TrashIcon, SparklesIcon, ListIcon, CalendarIcon, ShareIcon } from './Icons';
 
 export const CanvasCard: React.FC<{ fragment: Fragment }> = ({ fragment }) => {
   const presenter = usePresenter();
@@ -24,7 +24,14 @@ export const CanvasCard: React.FC<{ fragment: Fragment }> = ({ fragment }) => {
             </div>
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
                <IconButton icon={<BrainIcon />} label="发散" size="sm" onClick={() => presenter.ai.handleBrainstorm(fragment.content)} tooltipPos="top" />
-               <IconButton icon={<PlusIcon />} label="移除" size="sm" onClick={() => presenter.fragments.deleteFragment(fragment.id)} tooltipPos="top" />
+               <IconButton 
+                  icon={<TrashIcon />} 
+                  label="移除" 
+                  size="sm" 
+                  onClick={() => presenter.fragments.deleteFragment(fragment.id)} 
+                  tooltipPos="top"
+                  className="hover:bg-red-50 hover:text-red-500"
+               />
             </div>
         </div>
         <p className={`text-black leading-relaxed font-bold text-[1.25rem] tracking-tight mb-8 ${fragment.type === 'todo' && fragment.status === 'completed' ? 'line-through opacity-25' : ''}`}>
@@ -157,19 +164,19 @@ export const BrainstormView = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto pb-48 animate-in slide-in-from-right-8 duration-500">
-      <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-orange-200"><SparklesIcon className="w-5 h-5 text-white" /></div>
-          <h2 className="text-2xl font-black">"{stormData.idea}" 的灵感发散</h2>
+    <div className="max-w-4xl mx-auto pb-48 animate-in slide-in-from-right-8 duration-500 flex flex-col items-center">
+      <div className="flex flex-col items-center text-center gap-4 mb-12 max-w-3xl">
+          <div className="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center shadow-xl shadow-orange-200 rotate-3"><SparklesIcon className="w-6 h-6 text-white" /></div>
+          <h2 className="text-3xl font-black leading-tight tracking-tight">"{stormData.idea}" 的灵感发散</h2>
       </div>
-      <div className="grid gap-4 max-w-2xl">
+      <div className="grid gap-4 w-full max-w-2xl mx-auto">
           {stormData.storm?.map((s: any, i: number) => (
-              <div key={i} className="p-6 bg-white rounded-[28px] border border-slate-50 hover:border-blue-100 hover:shadow-lovart-md transition-all group">
-                  <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-black text-lg text-black group-hover:text-blue-600 transition-colors">{s.concept}</h4>
-                      <span className={`text-[10px] font-black px-2 py-1 rounded-full ${s.complexity === 'High' ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>{s.complexity}</span>
+              <div key={i} className="p-8 bg-white rounded-[32px] border border-white shadow-lovart-md hover:shadow-lovart-lg hover:-translate-y-1 transition-all group">
+                  <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-black text-xl text-black group-hover:text-blue-600 transition-colors tracking-tight">{s.concept}</h4>
+                      <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${s.complexity === 'High' ? 'bg-red-50 text-red-500' : s.complexity === 'Medium' ? 'bg-orange-50 text-orange-500' : 'bg-green-50 text-green-500'}`}>{s.complexity}</span>
                   </div>
-                  <p className="text-[14px] font-bold text-slate-400 leading-relaxed">{s.reasoning}</p>
+                  <p className="text-[15px] font-bold text-slate-400 leading-relaxed">{s.reasoning}</p>
               </div>
           ))}
       </div>
