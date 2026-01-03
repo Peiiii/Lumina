@@ -2,7 +2,8 @@
 import React from 'react';
 import { usePresenter } from '../../context/LuminaContext';
 import { Fragment } from '../../types';
-import { IconButton, Button, Badge } from '../UI';
+import { IconButton, Button } from '../ui/Button';
+import { Badge } from '../ui/Badge';
 import { BrainIcon, TrashIcon } from '../Icons';
 
 export const CanvasCard: React.FC<{ fragment: Fragment }> = ({ fragment }) => {

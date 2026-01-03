@@ -3,7 +3,7 @@ import React from 'react';
 import { useFragmentsStore } from '../../stores/fragmentsStore';
 import { CanvasCard } from './CanvasCard';
 import { SparklesIcon } from '../Icons';
-import { ViewContainer } from '../UI';
+import { ViewContainer } from '../ui/Layout';
 
 export const FeedView = () => {
   const { fragments } = useFragmentsStore();

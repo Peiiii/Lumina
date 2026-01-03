@@ -2,7 +2,9 @@
 import React from 'react';
 import { useAiStore } from '../../stores/aiStore';
 import { usePresenter } from '../../context/LuminaContext';
-import { ManualTriggerPlaceholder, ViewContainer, Badge } from '../UI';
+import { ManualTriggerPlaceholder } from '../ui/Placeholder';
+import { ViewContainer } from '../ui/Layout';
+import { Badge } from '../ui/Badge';
 import { BrainIcon, SparklesIcon } from '../Icons';
 import { AppView } from '../../types';
 

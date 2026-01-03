@@ -2,7 +2,10 @@
 import React from 'react';
 import { useAiStore } from '../../stores/aiStore';
 import { usePresenter } from '../../context/LuminaContext';
-import { IconButton, ManualTriggerPlaceholder, QuadrantBox, ViewContainer, Button } from '../UI';
+import { IconButton } from '../ui/Button';
+import { ManualTriggerPlaceholder } from '../ui/Placeholder';
+import { QuadrantBox } from '../ui/Card';
+import { ViewContainer } from '../ui/Layout';
 import { ListIcon, SparklesIcon } from '../Icons';
 
 export const PlanningView = () => {

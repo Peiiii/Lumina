@@ -8,7 +8,8 @@ import {
   SparklesIcon, BrainIcon, ListIcon, CalendarIcon,
   SearchIcon, SendIcon, ShareIcon
 } from './components/Icons';
-import { IconButton, PromptCard } from './components/UI';
+import { IconButton, Button } from './components/ui/Button';
+import { PromptCard } from './components/ui/Card';
 
 // 导入重组后的功能领域组件
 import { FeedView } from './components/feed/FeedView';

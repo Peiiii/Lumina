@@ -2,7 +2,9 @@
 import React from 'react';
 import { useAiStore } from '../../stores/aiStore';
 import { usePresenter } from '../../context/LuminaContext';
-import { IconButton, ManualTriggerPlaceholder, ViewContainer } from '../UI';
+import { IconButton } from '../ui/Button';
+import { ManualTriggerPlaceholder } from '../ui/Placeholder';
+import { ViewContainer } from '../ui/Layout';
 import { CalendarIcon, SparklesIcon, ShareIcon } from '../Icons';
 
 export const ReviewView = () => {
