@@ -20,14 +20,14 @@ import { BrainstormView } from './components/brainstorm/BrainstormView';
 const AppContent: React.FC = () => {
   const presenter = usePresenter();
   const { currentView, isAiLoading, isRecording, inputValue, assistantInput } = useAppStore();
-  const { planningData, reviewData, chatHistory } = useAiStore();
+  const { planningData, reviewData, chatHistory, isChatLoading } = useAiStore();
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (chatScrollRef.current) {
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
     }
-  }, [chatHistory]);
+  }, [chatHistory, isChatLoading]);
 
   const renderView = () => {
     if (isAiLoading) {
@@ -211,6 +211,17 @@ const AppContent: React.FC = () => {
                   </div>
                 </div>
               ))}
+              
+              {/* 思考状态气泡 */}
+              {isChatLoading && (
+                <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="bg-[#F4F4F7] border border-white shadow-lovart-sm px-4 py-3 rounded-[20px] rounded-bl-none flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -227,17 +238,18 @@ const AppContent: React.FC = () => {
                  }
                }}
                placeholder="对话 AI，整理你的混乱思绪..."
-               className="w-full bg-transparent border-none focus:outline-none resize-none h-16 text-[13px] font-semibold text-black placeholder:text-slate-300 leading-snug mb-2 scrollbar-hide"
+               disabled={isChatLoading}
+               className="w-full bg-transparent border-none focus:outline-none resize-none h-16 text-[13px] font-semibold text-black placeholder:text-slate-300 leading-snug mb-2 scrollbar-hide disabled:opacity-50"
              />
              <div className="flex items-center justify-between">
-                <IconButton icon={<SparklesIcon />} label="灵感激发" size="sm" variant="tint" tooltipPos="top" />
+                <IconButton icon={<SparklesIcon />} label="灵感激发" size="sm" variant="tint" tooltipPos="top" disabled={isChatLoading} />
                 <IconButton 
                   icon={<SendIcon />} 
                   label="发送" 
                   variant="solid" 
                   size="sm" 
                   isRound
-                  disabled={!assistantInput.trim()} 
+                  disabled={!assistantInput.trim() || isChatLoading} 
                   onClick={() => presenter.ai.sendChatMessage()} 
                 />
              </div>

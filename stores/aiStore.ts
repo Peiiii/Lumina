@@ -11,6 +11,7 @@ interface AiState {
   reviewData: any;
   stormData: any;
   chatHistory: ChatMessage[];
+  isChatLoading: boolean;
 }
 
 export const useAiStore = create<AiState>(() => ({
@@ -18,4 +19,5 @@ export const useAiStore = create<AiState>(() => ({
   reviewData: null,
   stormData: null,
   chatHistory: [],
+  isChatLoading: false,
 }));

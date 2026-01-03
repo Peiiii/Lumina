@@ -56,9 +56,10 @@ export class AiManager {
     const userMessage = assistantInput;
     useAppStore.setState({ assistantInput: '' });
     
-    // Optimistic update
+    // Optimistic update and set loading
     useAiStore.setState({ 
-      chatHistory: [...chatHistory, { role: 'user', content: userMessage }] 
+      chatHistory: [...chatHistory, { role: 'user', content: userMessage }],
+      isChatLoading: true
     });
 
     try {
@@ -73,10 +74,12 @@ export class AiManager {
       useAiStore.setState((state) => ({ 
         chatHistory: [...state.chatHistory, { role: 'model', content: "抱歉，由于网络波动，我暂时无法回应。请稍后再试。" }] 
       }));
+    } finally {
+      useAiStore.setState({ isChatLoading: false });
     }
   };
 
   clearChat = () => {
-    useAiStore.setState({ chatHistory: [] });
+    useAiStore.setState({ chatHistory: [], isChatLoading: false });
   };
 }
