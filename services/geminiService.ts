@@ -75,19 +75,34 @@ export const generateReview = async (fragments: Fragment[]) => {
   return response.text;
 };
 
-export const sendChatMessage = async (history: { role: 'user' | 'model', content: string }[], message: string) => {
+export const sendChatMessage = async (
+  history: { role: 'user' | 'model', content: string }[], 
+  message: string,
+  fragments: Fragment[]
+) => {
+  const fragmentsContext = fragments.length > 0
+    ? `【当前用户思维画布数据】:\n${fragments.map(f => `- [${f.type}] ${f.content} (${new Date(f.createdAt).toLocaleDateString()})`).join('\n')}`
+    : "【当前用户思维画布为空】";
+
   const contents = history.map(h => ({
     role: h.role === 'user' ? 'user' : 'model' as any,
     parts: [{ text: h.content }]
   }));
   
-  contents.push({ role: 'user', parts: [{ text: message }] });
+  // 将当前画布上下文和用户新消息组合
+  const finalPrompt = `${fragmentsContext}\n\n用户消息: ${message}`;
+  contents.push({ role: 'user', parts: [{ text: finalPrompt }] });
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents,
     config: {
-      systemInstruction: "你是一个名为 Lumina 的个人思维助手。你擅长整理碎片化想法、提供创意建议和协助个人规划。请用简洁、专业且具有启发性的中文回答。语气应当友好、充满好奇心且富有洞察力。如果你不知道某些背景信息，可以礼貌地询问用户。"
+      systemInstruction: `你是一个名为 Lumina 的个人思维助手。你实时感知用户在主画布（Mind Canvas）上的所有记录。
+你的任务是：
+1. 协助用户整理、联系和深度分析他们的碎片化想法。
+2. 当用户问及他们的记录、规划或过去的想法时，基于提供的【思维画布数据】给出精准回答。
+3. 语气简洁、专业且具有洞察力。
+4. 如果用户询问的内容在记录中找不到，请如实告知，并尝试引导用户补充。`
     }
   });
 

@@ -51,6 +51,7 @@ export class AiManager {
   sendChatMessage = async () => {
     const { assistantInput } = useAppStore.getState();
     const { chatHistory } = useAiStore.getState();
+    const { fragments } = useFragmentsStore.getState();
     if (!assistantInput.trim()) return;
 
     const userMessage = assistantInput;
@@ -63,7 +64,7 @@ export class AiManager {
     });
 
     try {
-      const response = await sendChatMessage(chatHistory, userMessage);
+      const response = await sendChatMessage(chatHistory, userMessage, fragments);
       if (response) {
         useAiStore.setState((state) => ({ 
           chatHistory: [...state.chatHistory, { role: 'model', content: response }] 
