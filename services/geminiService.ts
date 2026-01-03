@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Fragment } from "../types";
+import { Fragment, AiMode } from "../types";
 
 // Initialize with process.env.API_KEY directly as per guidelines
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -78,7 +78,8 @@ export const generateReview = async (fragments: Fragment[]) => {
 export const sendChatMessage = async (
   history: { role: 'user' | 'model', content: string }[], 
   message: string,
-  fragments: Fragment[]
+  fragments: Fragment[],
+  mode: AiMode = AiMode.AGENT
 ) => {
   const fragmentsContext = fragments.length > 0
     ? `【当前用户思维画布数据】:\n${fragments.map(f => `- [${f.type}] ${f.content} (${new Date(f.createdAt).toLocaleDateString()})`).join('\n')}`
@@ -89,22 +90,23 @@ export const sendChatMessage = async (
     parts: [{ text: h.content }]
   }));
   
-  // 将当前画布上下文和用户新消息组合
-  const finalPrompt = `${fragmentsContext}\n\n用户消息: ${message}`;
+  const finalPrompt = mode === AiMode.AGENT 
+    ? `${fragmentsContext}\n\n用户消息: ${message}`
+    : message;
+
   contents.push({ role: 'user', parts: [{ text: finalPrompt }] });
 
-  // 升级为流式输出
+  const agentInstruction = `你是一个名为 Lumina 的个人思维助手 (Agent 模式)。你实时感知用户在主画布上的所有记录。
+你的职责是协助用户整理、联系和深度分析碎片化想法。请结合用户提供的【思维画布数据】给出极具洞察力的建议。支持使用 Markdown 格式。`;
+
+  const askInstruction = `你是一个名为 Lumina 的 AI 知识助手 (Ask 模式)。
+你现在处于全知模式，主要任务是回答用户提出的任何知识性、逻辑性或通用性问题。你不需要强制关联用户的本地画布数据，除非用户主动提及。请直接、清晰、专业地回答。支持使用 Markdown 格式。`;
+
   const responseStream = await ai.models.generateContentStream({
     model: 'gemini-3-flash-preview',
     contents,
     config: {
-      systemInstruction: `你是一个名为 Lumina 的个人思维助手。你实时感知用户在主画布（Mind Canvas）上的所有记录。
-你的任务是：
-1. 协助用户整理、联系和深度分析他们的碎片化想法。
-2. 当用户问及他们的记录、规划或过去的想法时，基于提供的【思维画布数据】给出精准回答。
-3. 语气简洁、专业且具有洞察力。
-4. 如果用户询问的内容在记录中找不到，请如实告知，并尝试引导用户补充。
-5. 你的回复支持 Markdown 格式，鼓励使用列表、加粗等方式提升可读性。`
+      systemInstruction: mode === AiMode.AGENT ? agentInstruction : askInstruction
     }
   });
 

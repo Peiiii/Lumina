@@ -3,9 +3,13 @@ import { useAppStore } from '../stores/appStore';
 import { useAiStore } from '../stores/aiStore';
 import { useFragmentsStore } from '../stores/fragmentsStore';
 import { organizeFragments, generateReview, brainstormFromIdea, sendChatMessage } from '../services/geminiService';
-import { AppView } from '../types';
+import { AppView, AiMode } from '../types';
 
 export class AiManager {
+  setMode = (mode: AiMode) => {
+    useAiStore.setState({ currentMode: mode });
+  };
+
   triggerOrganize = async () => {
     const { fragments } = useFragmentsStore.getState();
     if (fragments.length === 0) return;
@@ -50,24 +54,21 @@ export class AiManager {
 
   sendChatMessage = async () => {
     const { assistantInput } = useAppStore.getState();
-    const { chatHistory } = useAiStore.getState();
+    const { chatHistory, currentMode } = useAiStore.getState();
     const { fragments } = useFragmentsStore.getState();
     if (!assistantInput.trim()) return;
 
     const userMessage = assistantInput;
     useAppStore.setState({ assistantInput: '' });
     
-    // 1. 立即展示用户消息并进入加载状态
     useAiStore.setState({ 
       chatHistory: [...chatHistory, { role: 'user', content: userMessage }],
       isChatLoading: true
     });
 
     try {
-      // 2. 调用流式接口
-      const streamResponse = await sendChatMessage(chatHistory, userMessage, fragments);
+      const streamResponse = await sendChatMessage(chatHistory, userMessage, fragments, currentMode);
       
-      // 3. 在历史记录中先占位一个空的 AI 消息，并关闭 loading 动画（因为文本要开始流出了）
       useAiStore.setState((state) => ({
         chatHistory: [...state.chatHistory, { role: 'model', content: "" }],
         isChatLoading: false
@@ -75,13 +76,11 @@ export class AiManager {
 
       let fullResponseText = "";
 
-      // 4. 迭代流式数据块
       for await (const chunk of streamResponse) {
         const chunkText = chunk.text;
         if (chunkText) {
           fullResponseText += chunkText;
           
-          // 5. 实时更新最后一条 AI 消息的内容
           useAiStore.setState((state) => {
             const newHistory = [...state.chatHistory];
             const lastMessageIndex = newHistory.length - 1;
@@ -99,7 +98,7 @@ export class AiManager {
       console.error('Chat failed:', error);
       useAiStore.setState((state) => ({ 
         isChatLoading: false,
-        chatHistory: [...state.chatHistory, { role: 'model', content: "抱歉，由于网络波动，我暂时无法响应。请稍后再试。" }] 
+        chatHistory: [...state.chatHistory, { role: 'model', content: "抱歉，由于网络波动，我暂时无法回应。请稍后再试。" }] 
       }));
     } finally {
       useAiStore.setState({ isChatLoading: false });

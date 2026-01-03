@@ -29,3 +29,8 @@ export enum AppView {
   REVIEW = 'review',
   BRAINSTORM = 'brainstorm'
 }
+
+export enum AiMode {
+  AGENT = 'agent',
+  ASK = 'ask'
+}

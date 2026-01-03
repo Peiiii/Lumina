@@ -1,5 +1,6 @@
 
 import { create } from 'zustand';
+import { AiMode } from '../types';
 
 export interface ChatMessage {
   role: 'user' | 'model';
@@ -7,6 +8,7 @@ export interface ChatMessage {
 }
 
 interface AiState {
+  currentMode: AiMode;
   planningData: any;
   reviewData: any;
   stormData: any;
@@ -15,6 +17,7 @@ interface AiState {
 }
 
 export const useAiStore = create<AiState>(() => ({
+  currentMode: AiMode.AGENT,
   planningData: null,
   reviewData: null,
   stormData: null,
