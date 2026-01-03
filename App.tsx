@@ -1,248 +1,60 @@
-
-import React, { useState, useEffect, useRef } from 'react';
-import { Fragment, AppView, NoteType } from './types';
-import { brainstormFromIdea, organizeFragments, generateReview } from './services/geminiService';
+import React from 'react';
+import { AppView } from './types';
+import { LuminaProvider, usePresenter } from './context/LuminaContext';
+import { useAppStore } from './stores/appStore';
+import { useAiStore } from './stores/aiStore';
 import { 
-  PlusIcon, SparklesIcon, BrainIcon, ListIcon, CalendarIcon,
-  AttachmentIcon, MentionIcon, SearchIcon, SendIcon, ShareIcon
+  SparklesIcon, BrainIcon, ListIcon, CalendarIcon,
+  SearchIcon, SendIcon, ShareIcon
 } from './components/Icons';
+import { IconButton, PromptCard } from './components/UI';
+import { FeedView, PlanningView, ReviewView, BrainstormView } from './components/Business';
 
-// --- 初始 Mock 数据 ---
-const INITIAL_MOCK_DATA: Fragment[] = [
-  {
-    id: 'mock-1',
-    content: "下个季度想尝试用 WebGPU 重构渲染管线，提升移动端 3D 画布的流畅度。",
-    createdAt: Date.now() - 1000 * 60 * 60 * 2,
-    tags: ['技术探索', '工作'],
-    type: 'fragment',
-    status: 'pending'
-  },
-  {
-    id: 'mock-2',
-    content: "灵感：一个基于物理引擎的笔记应用，所有的碎片像原子一样可以互相吸引或排斥。",
-    createdAt: Date.now() - 1000 * 60 * 60 * 5,
-    tags: ['创意', '产品'],
-    type: 'fragment',
-    status: 'pending'
-  },
-  {
-    id: 'mock-3',
-    content: "准备周一的团队同步周报，重点讨论 AI 录入系统的准确率提升方案。",
-    createdAt: Date.now() - 1000 * 60 * 60 * 24,
-    tags: ['待办', '管理'],
-    type: 'todo',
-    status: 'pending'
-  },
-  {
-    id: 'mock-4',
-    content: "书单推荐：卡洛·罗韦利的《时间的秩序》，探讨物理学与时间的本质。",
-    createdAt: Date.now() - 1000 * 60 * 60 * 28,
-    tags: ['阅读', '自我提升'],
-    type: 'fragment',
-    status: 'pending'
-  },
-  {
-    id: 'mock-5',
-    content: "周六去那家新开的咖啡店试试他们的埃塞俄比亚手冲，顺便带上 iPad 写写代码。",
-    createdAt: Date.now() - 1000 * 60 * 60 * 48,
-    tags: ['生活', '探店'],
-    type: 'todo',
-    status: 'pending'
-  }
-];
+const AppContent: React.FC = () => {
+  const presenter = usePresenter();
+  const { currentView, isAiLoading, isRecording, inputValue, assistantInput } = useAppStore();
+  const { planningData, reviewData } = useAiStore();
 
-// --- 一致性设计系统组件 ---
-
-type TooltipPos = 'top' | 'bottom' | 'left' | 'right';
-
-const IconButton = ({ 
-  icon, 
-  onClick, 
-  label, 
-  active = false, 
-  tooltipPos = 'top',
-  size = 'md',
-  variant = 'ghost',
-  disabled = false,
-  className = ""
-}: { 
-  icon: React.ReactNode, 
-  onClick?: () => void, 
-  label: string, 
-  active?: boolean,
-  tooltipPos?: TooltipPos,
-  size?: 'sm' | 'md' | 'lg',
-  variant?: 'ghost' | 'solid' | 'tint',
-  disabled?: boolean,
-  className?: string
-}) => {
-  const sizeClasses = {
-    sm: 'w-7 h-7 rounded-lg p-1',
-    md: 'w-9 h-9 rounded-xl p-2',
-    lg: 'w-11 h-11 rounded-2xl p-2.5'
-  };
-
-  const variantClasses = {
-    ghost: active ? 'bg-slate-100 text-black shadow-inner' : 'text-slate-400 hover:bg-slate-100/80 hover:text-black',
-    solid: 'bg-black text-white shadow-md hover:bg-zinc-800 disabled:bg-slate-200',
-    tint: 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-  };
-
-  const tooltipBase = "absolute px-2 py-1 bg-[#121212] text-white text-[10px] font-bold rounded-lg opacity-0 scale-90 pointer-events-none transition-all duration-200 z-[100] whitespace-nowrap shadow-xl group-hover/tooltip:opacity-100 group-hover/tooltip:scale-100 group-hover/tooltip:translate-y-0 translate-y-1";
-  
-  const posMap = {
-    top: `${tooltipBase} bottom-full left-1/2 -translate-x-1/2 mb-1.5`,
-    bottom: `${tooltipBase} top-full left-1/2 -translate-x-1/2 mt-1.5`,
-    left: `${tooltipBase} right-full top-1/2 -translate-y-1/2 mr-1.5`,
-    right: `${tooltipBase} left-full top-1/2 -translate-y-1/2 ml-1.5`
-  };
-
-  const arrowBase = "absolute w-1.5 h-1.5 bg-[#121212] rotate-45 rounded-[0.5px]";
-  const arrowPos = {
-    top: `${arrowBase} -bottom-0.5 left-1/2 -translate-x-1/2`,
-    bottom: `${arrowBase} -top-0.5 left-1/2 -translate-x-1/2`,
-    left: `${arrowBase} -right-0.5 top-1/2 -translate-y-1/2`,
-    right: `${arrowBase} -left-0.5 top-1/2 -translate-y-1/2`
-  };
-
-  return (
-    <button 
-      onClick={onClick}
-      disabled={disabled}
-      className={`group/tooltip relative flex items-center justify-center transition-all duration-200 active:scale-90 ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
-    >
-      {React.cloneElement(icon as React.ReactElement, { className: 'w-full h-full stroke-[2]' })}
-      <div className={posMap[tooltipPos]}>
-        {label}
-        <div className={arrowPos[tooltipPos]} />
-      </div>
-    </button>
-  );
-};
-
-// --- 应用主逻辑 ---
-
-const App: React.FC = () => {
-  const [fragments, setFragments] = useState<Fragment[]>([]);
-  const [currentView, setCurrentView] = useState<AppView>(AppView.FEED);
-  const [inputValue, setInputValue] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
-  const [assistantInput, setAssistantInput] = useState('');
-  const [isAiLoading, setIsAiLoading] = useState(false);
-
-  // 分离不同视图的 AI 结果，支持共存和手动触发
-  const [planningData, setPlanningData] = useState<any>(null);
-  const [reviewData, setReviewData] = useState<any>(null);
-  const [stormData, setStormData] = useState<any>(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('lumina_fragments');
-    if (saved && JSON.parse(saved).length > 0) {
-      setFragments(JSON.parse(saved));
-    } else {
-      setFragments(INITIAL_MOCK_DATA);
+  const renderView = () => {
+    if (isAiLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full space-y-3">
+            <div className="relative">
+              <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center animate-bounce">
+                  <SparklesIcon className="w-6 h-6 text-white" />
+              </div>
+              <div className="absolute -inset-2 bg-blue-400/20 blur-xl rounded-full animate-pulse" />
+            </div>
+            <p className="text-xs font-black text-slate-400 tracking-widest uppercase">AI Architecting...</p>
+        </div>
+      );
     }
-  }, []);
 
-  useEffect(() => {
-    if (fragments.length > 0) {
-      localStorage.setItem('lumina_fragments', JSON.stringify(fragments));
+    switch (currentView) {
+      case AppView.FEED: return <FeedView />;
+      case AppView.PLANNING: return <PlanningView />;
+      case AppView.REVIEW: return <ReviewView />;
+      case AppView.BRAINSTORM: return <BrainstormView />;
+      default: return <FeedView />;
     }
-  }, [fragments]);
-
-  const addFragment = (content: string = inputValue) => {
-    if (!content.trim()) return;
-    const newFragment: Fragment = {
-      id: Date.now().toString(),
-      content: content,
-      createdAt: Date.now(),
-      tags: [],
-      type: 'fragment',
-      status: 'pending'
-    };
-    setFragments(prev => [newFragment, ...prev]);
-    setInputValue('');
-  };
-
-  const triggerOrganize = async () => {
-    if (fragments.length === 0) return;
-    setIsAiLoading(true);
-    try {
-      const result = await organizeFragments(fragments);
-      setPlanningData(result);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
-  const triggerReview = async () => {
-    if (fragments.length === 0) return;
-    setIsAiLoading(true);
-    try {
-      const result = await generateReview(fragments);
-      setReviewData(result);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
-  const handleBrainstorm = async (idea: string) => {
-    setIsAiLoading(true);
-    setCurrentView(AppView.BRAINSTORM);
-    try {
-      const result = await brainstormFromIdea(idea);
-      setStormData({ idea, storm: result });
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
-  const deleteFragment = (id: string) => {
-    setFragments(prev => prev.filter(f => f.id !== id));
-  };
-
-  const toggleTodo = (id: string) => {
-    setFragments(prev => prev.map(f => {
-        if (f.id === id) {
-            return { ...f, type: f.type === 'todo' ? 'fragment' : 'todo', status: f.status || 'pending' };
-        }
-        return f;
-    }));
-  };
-
-  const simulateRecording = () => {
-    setIsRecording(true);
-    setTimeout(() => {
-      setIsRecording(false);
-      const fakeVoiceResult = "我想在下周开始学习 WebGL，并将它应用在 Lumina 的画布可视化中。";
-      addFragment(fakeVoiceResult);
-    }, 2500);
   };
 
   return (
     <div className="flex h-screen bg-[#F4F4F7] text-[#121212] overflow-hidden p-4 gap-4">
-      
-      {/* 侧边栏导航 - 现在仅负责切换视图 */}
+      {/* 侧边栏 */}
       <nav className="w-[58px] bg-white rounded-[24px] shadow-lovart-md border border-white flex flex-col items-center py-5 z-20 flex-shrink-0 self-center h-fit">
         <div className="flex flex-col gap-2.5">
-          <IconButton size="md" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21l-9-9 9-9 9 9-9 9z" /></svg>} label="灵感流" active={currentView === AppView.FEED} onClick={() => setCurrentView(AppView.FEED)} tooltipPos="right" />
-          <IconButton size="md" icon={<ListIcon />} label="规划/待办" active={currentView === AppView.PLANNING} onClick={() => setCurrentView(AppView.PLANNING)} tooltipPos="right" />
-          <IconButton size="md" icon={<BrainIcon />} label="创意工坊" active={currentView === AppView.BRAINSTORM} onClick={() => setCurrentView(AppView.BRAINSTORM)} tooltipPos="right" />
-          <IconButton size="md" icon={<CalendarIcon />} label="深度复盘" active={currentView === AppView.REVIEW} onClick={() => setCurrentView(AppView.REVIEW)} tooltipPos="right" />
+          <IconButton size="md" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21l-9-9 9-9 9 9-9 9z" /></svg>} label="灵感流" active={currentView === AppView.FEED} onClick={() => presenter.app.setCurrentView(AppView.FEED)} tooltipPos="right" />
+          <IconButton size="md" icon={<ListIcon />} label="规划/待办" active={currentView === AppView.PLANNING} onClick={() => presenter.app.setCurrentView(AppView.PLANNING)} tooltipPos="right" />
+          <IconButton size="md" icon={<BrainIcon />} label="创意工坊" active={currentView === AppView.BRAINSTORM} onClick={() => presenter.app.setCurrentView(AppView.BRAINSTORM)} tooltipPos="right" />
+          <IconButton size="md" icon={<CalendarIcon />} label="深度复盘" active={currentView === AppView.REVIEW} onClick={() => presenter.app.setCurrentView(AppView.REVIEW)} tooltipPos="right" />
           <div className="w-6 h-[1px] bg-slate-50 my-1 self-center" />
           <IconButton size="md" icon={<ShareIcon />} label="导出" tooltipPos="right" />
         </div>
       </nav>
 
-      {/* 主画布区 */}
+      {/* 主画布 */}
       <main className="flex-1 relative overflow-hidden flex flex-col">
-        {/* 悬浮顶栏 */}
         <header className="absolute top-4 left-0 right-0 flex justify-between items-center pointer-events-none z-20 px-4">
           <div className="bg-white/95 backdrop-blur-xl px-2.5 py-1 rounded-[14px] shadow-lovart-sm border border-white/50 pointer-events-auto flex items-center gap-2.5">
              <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white font-black text-[8px]">LU</div>
@@ -261,125 +73,8 @@ const App: React.FC = () => {
           </div>
         </header>
 
-        {/* 画布核心内容 */}
         <div className="flex-1 overflow-y-auto no-scrollbar p-12 pt-24 pb-48">
-          {isAiLoading ? (
-            <div className="flex flex-col items-center justify-center h-full space-y-3">
-                <div className="relative">
-                  <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center animate-bounce">
-                      <SparklesIcon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="absolute -inset-2 bg-blue-400/20 blur-xl rounded-full animate-pulse" />
-                </div>
-                <p className="text-xs font-black text-slate-400 tracking-widest uppercase">AI Architecting...</p>
-            </div>
-          ) : currentView === AppView.FEED ? (
-            <div className="max-w-3xl mx-auto space-y-12">
-              {fragments.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-40 opacity-5 select-none grayscale scale-110">
-                   <SparklesIcon className="w-14 h-14 mb-4" />
-                   <p className="text-[9px] font-black tracking-[0.4em] uppercase">Ready for your ideas</p>
-                </div>
-              ) : (
-                <div className="grid gap-8">
-                  {fragments.map((f, i) => (
-                    <CanvasCard 
-                      key={f.id} 
-                      fragment={f} 
-                      onDelete={() => deleteFragment(f.id)} 
-                      onToggleTodo={() => toggleTodo(f.id)} 
-                      onBrainstorm={() => handleBrainstorm(f.content)} 
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : currentView === AppView.PLANNING ? (
-            <div className="max-w-4xl mx-auto">
-                {!planningData ? (
-                    <ManualTriggerPlaceholder 
-                        icon={<ListIcon className="w-12 h-12" />}
-                        title="结构化你的思绪"
-                        description="AI 将分析你所有的碎片记录，将其整理为四象限任务看板，帮助你清晰掌控全局进度。"
-                        onTrigger={triggerOrganize}
-                        buttonText="开启 AI 组织规划"
-                    />
-                ) : (
-                    <div className="grid grid-cols-2 gap-6 h-full animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        <div className="col-span-2 bg-white/60 p-8 rounded-[32px] border border-white mb-2 flex justify-between items-start">
-                             <div>
-                                <h2 className="text-2xl font-black mb-2">规划摘要</h2>
-                                <p className="text-slate-500 font-bold leading-relaxed">{planningData.summary}</p>
-                             </div>
-                             <IconButton icon={<SparklesIcon />} label="重新生成" variant="tint" onClick={triggerOrganize} />
-                        </div>
-                        <QuadrantBox title="重要 & 紧急" color="red" items={planningData.actionItems?.slice(0, 3)} />
-                        <QuadrantBox title="重要 & 长远" color="blue" items={planningData.themes} />
-                        <QuadrantBox title="琐碎 & 待办" color="zinc" items={planningData.opportunities?.slice(0, 3)} />
-                        <QuadrantBox title="创意 & 备忘" color="orange" items={planningData.opportunities?.slice(3, 6)} />
-                    </div>
-                )}
-            </div>
-          ) : currentView === AppView.REVIEW ? (
-            <div className="max-w-4xl mx-auto">
-                 {!reviewData ? (
-                    <ManualTriggerPlaceholder 
-                        icon={<CalendarIcon className="w-12 h-12" />}
-                        title="深度复盘总结"
-                        description="回顾最近的思维轨迹，AI 将为你提炼核心进展与接下来的行动建议。这不仅是总结，更是成长的反馈。"
-                        onTrigger={triggerReview}
-                        buttonText="生成复盘报告"
-                    />
-                ) : (
-                    <div className="bg-white p-16 rounded-[48px] shadow-lovart-lg border border-white font-serif max-w-2xl mx-auto relative animate-in zoom-in-95 duration-700">
-                        <div className="absolute top-8 right-8">
-                            <IconButton icon={<SparklesIcon />} label="刷新复盘" variant="ghost" onClick={triggerReview} />
-                        </div>
-                        <div className="border-b-4 border-black pb-4 mb-8">
-                            <span className="text-[10px] font-black font-sans tracking-[0.4em] uppercase">Weekly Digest</span>
-                            <h2 className="text-4xl font-black font-sans leading-tight mt-1">深度复盘摘要报告</h2>
-                        </div>
-                        <div className="prose prose-lg prose-slate font-bold text-slate-700 leading-loose whitespace-pre-wrap first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left">
-                            {reviewData}
-                        </div>
-                        <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center font-sans">
-                            <span className="text-[10px] font-black text-slate-300">© LUMINA AI SYSTEM</span>
-                            <IconButton icon={<ShareIcon />} label="分享导出" size="sm" variant="tint" />
-                        </div>
-                    </div>
-                )}
-            </div>
-          ) : currentView === AppView.BRAINSTORM && (
-            <div className="max-w-4xl mx-auto">
-                 {!stormData ? (
-                    <ManualTriggerPlaceholder 
-                        icon={<BrainIcon className="w-12 h-12" />}
-                        title="创意工坊"
-                        description="在灵感流中选择一个特定想法点击“发散”图标，或在此开启全域创意风暴。"
-                        onTrigger={() => setCurrentView(AppView.FEED)}
-                        buttonText="去画布选择创意"
-                    />
-                ) : (
-                    <div className="space-y-6 max-w-2xl mx-auto animate-in slide-in-from-right-8 duration-500">
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-orange-200"><SparklesIcon className="w-5 h-5 text-white" /></div>
-                            <h2 className="text-2xl font-black">"{stormData.idea}" 的灵感发散</h2>
-                        </div>
-                        <div className="grid gap-4">
-                            {stormData.storm?.map((s: any, i: number) => (
-                                <div key={i} className="p-6 bg-white rounded-[28px] border border-slate-50 hover:border-blue-100 hover:shadow-lovart-md transition-all group">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-black text-lg text-black group-hover:text-blue-600 transition-colors">{s.concept}</h4>
-                                        <span className={`text-[10px] font-black px-2 py-1 rounded-full ${s.complexity === 'High' ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>{s.complexity}</span>
-                                    </div>
-                                    <p className="text-[14px] font-bold text-slate-400 leading-relaxed">{s.reasoning}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-          )}
+          {renderView()}
         </div>
 
         {/* 底部悬浮录入 */}
@@ -397,8 +92,8 @@ const App: React.FC = () => {
             ) : (
               <input 
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addFragment()}
+                onChange={(e) => presenter.app.setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && presenter.fragments.addFragment()}
                 placeholder="捕捉灵光一闪，或点击麦克风说出想法..."
                 className="flex-1 bg-transparent border-none focus:outline-none text-[14px] font-bold text-black py-2 placeholder:text-slate-300"
               />
@@ -410,15 +105,15 @@ const App: React.FC = () => {
                 variant={isRecording ? "solid" : "ghost"}
                 className={isRecording ? "bg-red-500 hover:bg-red-600 text-white" : ""}
                 size="md" 
-                onClick={simulateRecording}
+                onClick={presenter.fragments.simulateRecording}
               />
-              <IconButton icon={<SendIcon />} label="提交记录" variant="solid" size="md" onClick={() => addFragment()} />
+              <IconButton icon={<SendIcon />} label="提交记录" variant="solid" size="md" onClick={() => presenter.fragments.addFragment()} />
             </div>
           </div>
         </div>
       </main>
 
-      {/* 右侧 AI 助手面板 */}
+      {/* 右侧面板 */}
       <aside className="w-[340px] bg-white rounded-[28px] shadow-lovart-md border border-white flex flex-col z-30 flex-shrink-0 overflow-hidden">
         <header className="h-[60px] flex items-center justify-end px-4 gap-0.5 flex-shrink-0 border-b border-slate-50/50">
            <IconButton icon={<ListIcon />} label="历史记录" size="sm" tooltipPos="bottom" />
@@ -441,8 +136,8 @@ const App: React.FC = () => {
                title="AI 自动化规划" 
                subtitle="分析全域碎片记录，一键生成任务象限看板。" 
                onClick={() => {
-                   setCurrentView(AppView.PLANNING);
-                   if (!planningData) triggerOrganize();
+                   presenter.app.setCurrentView(AppView.PLANNING);
+                   if (!planningData) presenter.ai.triggerOrganize();
                }}
                images={[
                  'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=120&h=180&fit=crop',
@@ -453,8 +148,8 @@ const App: React.FC = () => {
                title="生成深度周报" 
                subtitle="深度回顾过去思维轨迹，提炼成长亮点与建议。" 
                onClick={() => {
-                    setCurrentView(AppView.REVIEW);
-                    if (!reviewData) triggerReview();
+                    presenter.app.setCurrentView(AppView.REVIEW);
+                    if (!reviewData) presenter.ai.triggerReview();
                }}
                images={[
                  'https://images.unsplash.com/photo-1454165833767-027ffea9e77b?w=120&h=180&fit=crop',
@@ -474,12 +169,11 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* AI 输入区 */}
         <div className="p-4 border-t border-slate-50 flex-shrink-0">
           <div className="bg-[#FBFBFC] rounded-[22px] p-4 border border-slate-100 transition-all focus-within:shadow-md focus-within:border-slate-200">
              <textarea 
                value={assistantInput}
-               onChange={(e) => setAssistantInput(e.target.value)}
+               onChange={(e) => presenter.app.setAssistantInput(e.target.value)}
                placeholder="对话 AI，整理你的混乱思绪..."
                className="w-full bg-transparent border-none focus:outline-none resize-none h-16 text-[13px] font-semibold text-black placeholder:text-slate-300 leading-snug mb-2 scrollbar-hide"
              />
@@ -499,109 +193,10 @@ const App: React.FC = () => {
   );
 };
 
-// --- 手动触发引导组件 ---
-const ManualTriggerPlaceholder = ({ icon, title, description, onTrigger, buttonText }: { icon: React.ReactNode, title: string, description: string, onTrigger: () => void, buttonText: string }) => (
-    <div className="flex flex-col items-center justify-center py-32 text-center max-w-md mx-auto">
-        <div className="w-20 h-20 bg-white rounded-[32px] flex items-center justify-center text-slate-300 shadow-lovart-md mb-8 border border-white">
-            {icon}
-        </div>
-        <h2 className="text-2xl font-black mb-3 tracking-tight">{title}</h2>
-        <p className="text-slate-400 font-bold text-sm leading-relaxed mb-10">{description}</p>
-        <button 
-            onClick={onTrigger}
-            className="flex items-center gap-3 px-10 py-4 bg-black text-white rounded-full font-black text-[12px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10 group"
-        >
-            <SparklesIcon className="w-4 h-4 text-blue-400 group-hover:rotate-12 transition-transform" />
-            {buttonText}
-        </button>
-    </div>
-);
-
-// --- 精致卡片组件 ---
-
-const QuadrantBox = ({ title, color, items }: { title: string, color: 'red'|'blue'|'zinc'|'orange', items: any[] }) => {
-    const colors = {
-        red: 'bg-red-50/50 border-red-100 text-red-600',
-        blue: 'bg-blue-50/50 border-blue-100 text-blue-600',
-        zinc: 'bg-slate-50/50 border-slate-200 text-slate-600',
-        orange: 'bg-orange-50/50 border-orange-100 text-orange-600'
-    };
-    return (
-        <div className={`p-6 rounded-[28px] border-2 ${colors[color]} flex flex-col min-h-[220px]`}>
-            <h3 className="text-[11px] font-black uppercase tracking-widest mb-4 opacity-70">{title}</h3>
-            <div className="flex-1 space-y-2">
-                {items?.map((item, i) => (
-                    <div key={i} className="p-3 bg-white/80 rounded-xl text-[13px] font-bold shadow-sm border border-white/50">{item}</div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-const PromptCard = ({ title, subtitle, images, onClick }: { title: string, subtitle: string, images: string[], onClick?: () => void }) => (
-  <div 
-    onClick={onClick} 
-    className="bg-[#F8F9FA] p-4 pr-1.5 rounded-[20px] flex items-center justify-between group cursor-pointer hover:bg-white hover:shadow-lovart-md border border-transparent hover:border-slate-100 transition-all h-[96px]"
-  >
-    <div className="flex-1 pr-2">
-      <h4 className="text-[12.5px] font-black text-black mb-0.5 group-hover:text-blue-600 tracking-tight">{title}</h4>
-      <p className="text-slate-400 text-[9.5px] font-bold leading-tight line-clamp-2">{subtitle}</p>
-    </div>
-    <div className="flex -space-x-6 relative pr-3">
-      {images.map((url, i) => (
-        <div 
-          key={i} 
-          className={`w-11 h-15 rounded-lg overflow-hidden border-2 border-white shadow-lovart-sm transition-all duration-300 transform origin-bottom-right ${i === 0 ? 'rotate-[12deg] group-hover:rotate-0' : 'rotate-[-4deg] group-hover:rotate-0 scale-95 translate-x-1.5'}`} 
-          style={{zIndex: images.length - i}}
-        >
-          <img src={url} alt="card" className="w-full h-full object-cover" />
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const CanvasCard: React.FC<{ 
-  fragment: Fragment, 
-  onDelete: () => void, 
-  onToggleTodo: () => void,
-  onBrainstorm: () => void 
-}> = ({ fragment, onDelete, onToggleTodo, onBrainstorm }) => (
-  <div className={`group bg-white p-8 rounded-[40px] border transition-all duration-500 relative ${fragment.type === 'todo' ? 'border-blue-50 shadow-lovart-sm ring-1 ring-blue-50' : 'border-white shadow-lovart-md hover:shadow-lovart-lg'}`}>
-    <div className="flex-1">
-      <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-              {fragment.type === 'todo' && (
-                  <div className="px-2 py-0.5 bg-blue-500 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded">TODO</div>
-              )}
-              <div className="px-2 py-0.5 bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-[0.1em] rounded">
-                Captured at {new Date(fragment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
-          </div>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-             <IconButton icon={<BrainIcon />} label="发散" size="sm" onClick={onBrainstorm} tooltipPos="top" />
-             <IconButton icon={<PlusIcon />} label="移除" size="sm" onClick={onDelete} tooltipPos="top" />
-          </div>
-      </div>
-      <p className={`text-black leading-relaxed font-bold text-[1.25rem] tracking-tight mb-8 ${fragment.type === 'todo' && fragment.status === 'completed' ? 'line-through opacity-25' : ''}`}>
-        {fragment.content}
-      </p>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-            <button 
-              onClick={onToggleTodo}
-              className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${fragment.type === 'todo' ? 'bg-blue-500 text-white shadow-lg shadow-blue-100' : 'bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600'}`}
-            >
-                {fragment.type === 'todo' ? 'Mark Completed' : '+ Convert to To-Do'}
-            </button>
-        </div>
-        <div className="flex -space-x-1.5">
-           <div className="w-5 h-5 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center text-[8px] font-black text-purple-600" title="AI Insight Generated">✨</div>
-           {fragment.type === 'todo' && <div className="w-5 h-5 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[8px] font-black text-blue-600">L</div>}
-        </div>
-      </div>
-    </div>
-  </div>
+const App: React.FC = () => (
+  <LuminaProvider>
+    <AppContent />
+  </LuminaProvider>
 );
 
 export default App;
