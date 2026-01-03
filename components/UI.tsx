@@ -29,7 +29,7 @@ export const Button: React.FC<ButtonProps> = ({
   icon,
   loading = false
 }) => {
-  const baseStyles = "flex items-center justify-center gap-2 font-black uppercase tracking-widest transition-all duration-200 active:scale-95 disabled:opacity-100 disabled:pointer-events-none";
+  const baseStyles = "flex items-center justify-center gap-2 font-black uppercase tracking-widest transition-all duration-200 active:scale-95 disabled:pointer-events-none";
   
   const variants = {
     primary: "bg-black text-white hover:bg-zinc-800 shadow-lg shadow-black/5 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none",
@@ -143,7 +143,7 @@ export const ManualTriggerPlaceholder = ({ icon, title, description, onTrigger, 
         <div className="w-20 h-20 bg-white rounded-[32px] flex items-center justify-center text-slate-300 shadow-lovart-md mb-8 border border-white">
             {icon}
         </div>
-        <h2 className="text-2xl font-black mb-3 tracking-tight">{title}</h2>
+        <h2 className="text-2xl font-black mb-3 tracking-tight text-black">{title}</h2>
         <p className="text-slate-400 font-bold text-sm leading-relaxed mb-10">{description}</p>
         <Button onClick={onTrigger} size="lg" icon={<SparklesIcon className="w-4 h-4 text-blue-400" />}>
           {buttonText}
@@ -162,9 +162,11 @@ export const QuadrantBox = ({ title, color, items }: { title: string, color: 're
         <div className={`p-6 rounded-[28px] border-2 ${colors[color]} flex flex-col min-h-[220px]`}>
             <h3 className="text-[11px] font-black uppercase tracking-widest mb-4 opacity-70">{title}</h3>
             <div className="flex-1 space-y-2">
-                {items?.map((item, i) => (
+                {items && items.length > 0 ? items.map((item, i) => (
                     <div key={i} className="p-3 bg-white/80 rounded-xl text-[13px] font-bold shadow-sm border border-white/50">{item}</div>
-                ))}
+                )) : (
+                  <div className="p-3 bg-white/40 rounded-xl text-[12px] font-bold opacity-30 italic">暂无内容</div>
+                )}
             </div>
         </div>
     );

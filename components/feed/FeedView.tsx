@@ -10,9 +10,9 @@ export const FeedView = () => {
   return (
     <ViewContainer className={fragments.length > 0 ? 'pb-48 space-y-12' : 'h-full flex items-center justify-center'}>
       {fragments.length === 0 ? (
-        <div className="flex flex-col items-center justify-center opacity-5 select-none grayscale scale-110">
-           <SparklesIcon className="w-14 h-14 mb-4" />
-           <p className="text-[9px] font-black tracking-[0.4em] uppercase">Ready for your ideas</p>
+        <div className="flex flex-col items-center justify-center opacity-5 select-none grayscale scale-110 text-center">
+           <SparklesIcon className="w-14 h-14 mb-4 mx-auto" />
+           <p className="text-[9px] font-black tracking-[0.4em] uppercase">准备好捕捉你的灵感了</p>
         </div>
       ) : (
         <div className="grid gap-8 w-full">

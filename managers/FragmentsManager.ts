@@ -1,3 +1,4 @@
+
 import { useFragmentsStore } from '../stores/fragmentsStore';
 import { useAppStore } from '../stores/appStore';
 import { Fragment, NoteType } from '../types';
@@ -21,7 +22,7 @@ const INITIAL_MOCK_DATA: Fragment[] = [
   },
   {
     id: 'mock-3',
-    content: "准备周一的团队同步周报，重点讨论 AI 录入系统的准确率提升方案。",
+    content: "准备周一的团队同步会议，重点讨论 AI 录入系统的准确率提升方案。",
     createdAt: Date.now() - 1000 * 60 * 60 * 24,
     tags: ['待办', '管理'],
     type: 'todo',
@@ -96,7 +97,12 @@ export class FragmentsManager {
     useFragmentsStore.setState((state) => ({
       fragments: state.fragments.map(f => {
         if (f.id === id) {
-          return { ...f, type: f.type === 'todo' ? 'fragment' : 'todo', status: f.status || 'pending' };
+          const isTodo = f.type === 'todo';
+          return { 
+            ...f, 
+            type: (isTodo ? 'fragment' : 'todo') as NoteType, 
+            status: (isTodo ? 'pending' : 'completed') as 'pending' | 'completed'
+          };
         }
         return f;
       })

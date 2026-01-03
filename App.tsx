@@ -31,7 +31,7 @@ const AppContent: React.FC = () => {
               </div>
               <div className="absolute -inset-2 bg-blue-400/20 blur-xl rounded-full animate-pulse" />
             </div>
-            <p className="text-xs font-black text-slate-400 tracking-widest uppercase">AI Architecting...</p>
+            <p className="text-xs font-black text-slate-400 tracking-widest uppercase">AI 正在构建中...</p>
         </div>
       );
     }
@@ -55,7 +55,7 @@ const AppContent: React.FC = () => {
           <IconButton size="md" icon={<BrainIcon />} label="创意工坊" active={currentView === AppView.BRAINSTORM} onClick={() => presenter.app.setCurrentView(AppView.BRAINSTORM)} tooltipPos="right" />
           <IconButton size="md" icon={<CalendarIcon />} label="深度复盘" active={currentView === AppView.REVIEW} onClick={() => presenter.app.setCurrentView(AppView.REVIEW)} tooltipPos="right" />
           <div className="w-6 h-[1px] bg-slate-50 my-1 self-center" />
-          <IconButton size="md" icon={<ShareIcon />} label="导出" tooltipPos="right" />
+          <IconButton size="md" icon={<ShareIcon />} label="导出分享" tooltipPos="right" />
         </div>
       </nav>
 
@@ -66,16 +66,16 @@ const AppContent: React.FC = () => {
              <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white font-black text-[8px]">LU</div>
              <div className="flex items-center gap-1 cursor-pointer group">
                 <span className="text-[12px] font-bold text-slate-800 tracking-tight">
-                    {currentView === AppView.FEED ? '无限灵感画布' : 
-                     currentView === AppView.PLANNING ? '个人规划象限' : 
-                     currentView === AppView.REVIEW ? '复盘·Weekly Review' : '创意风暴中心'}
+                    {currentView === AppView.FEED ? '灵感流' : 
+                     currentView === AppView.PLANNING ? '规划看板' : 
+                     currentView === AppView.REVIEW ? '深度复盘' : '创意中心'}
                 </span>
                 <svg className="w-2 h-2 text-slate-300 group-hover:text-black transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M19 9l-7 7-7-7" /></svg>
              </div>
           </div>
           <div className="bg-white/95 backdrop-blur-xl px-3 py-1 rounded-[14px] shadow-lovart-sm border border-white/50 pointer-events-auto flex items-center gap-3">
-             <span className="text-[10px] font-black text-slate-400 tracking-tighter uppercase">Syncing...</span>
-             <IconButton size="sm" icon={<SearchIcon />} label="检索" tooltipPos="bottom" />
+             <span className="text-[10px] font-black text-slate-400 tracking-tighter uppercase">已同步</span>
+             <IconButton size="sm" icon={<SearchIcon />} label="全局检索" tooltipPos="bottom" />
           </div>
         </header>
 
@@ -93,7 +93,7 @@ const AppContent: React.FC = () => {
                         <div key={i} className="w-1 bg-red-400 rounded-full animate-wave" style={{height: `${10 + Math.random() * 20}px`, animationDelay: `${i * 0.1}s`}} />
                     ))}
                  </div>
-                 <span className="text-xs font-black text-red-500 tracking-widest uppercase ml-2">Recording Voice...</span>
+                 <span className="text-xs font-black text-red-500 tracking-widest uppercase ml-2">正在录音...</span>
               </div>
             ) : (
               <input 
@@ -107,7 +107,7 @@ const AppContent: React.FC = () => {
             <div className="flex items-center gap-1">
               <IconButton 
                 icon={isRecording ? <div className="w-2 h-2 bg-white rounded-sm" /> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><path d="M12 19v4m-4 0h8"/></svg>} 
-                label={isRecording ? "停止录音" : "语音捕捉"} 
+                label={isRecording ? "停止录音" : "语音输入"} 
                 variant={isRecording ? "solid" : "ghost"}
                 className={isRecording ? "bg-red-500 hover:bg-red-600 text-white" : ""}
                 size="md" 
@@ -129,8 +129,8 @@ const AppContent: React.FC = () => {
       {/* 右侧面板 */}
       <aside className="w-[340px] bg-white rounded-[28px] shadow-lovart-md border border-white flex flex-col z-30 flex-shrink-0 overflow-hidden">
         <header className="h-[60px] flex items-center justify-end px-4 gap-0.5 flex-shrink-0 border-b border-slate-50/50">
-           <IconButton icon={<ListIcon />} label="历史记录" size="sm" tooltipPos="bottom" />
-           <IconButton icon={<ShareIcon />} label="协同" size="sm" tooltipPos="bottom" />
+           <IconButton icon={<ListIcon />} label="历史轨迹" size="sm" tooltipPos="bottom" />
+           <IconButton icon={<ShareIcon />} label="协作中心" size="sm" tooltipPos="bottom" />
            <IconButton icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>} label="时间线" size="sm" tooltipPos="left" />
         </header>
 
@@ -138,16 +138,16 @@ const AppContent: React.FC = () => {
           <div className="mb-8">
              <div className="inline-flex items-center gap-2 px-2 py-1 bg-black text-white rounded-full mb-4">
                 <SparklesIcon className="w-3 h-3" />
-                <span className="text-[8px] font-black uppercase tracking-widest">Active Assistant</span>
+                <span className="text-[8px] font-black uppercase tracking-widest">智能助手已就绪</span>
              </div>
-             <h1 className="text-[20px] font-black text-black tracking-tight mb-1 leading-tight">AI 智能管家</h1>
-             <p className="text-slate-400 font-bold text-sm tracking-tight leading-snug">手动触发深度整理，将零碎想法升华为结构性洞察。</p>
+             <h1 className="text-[20px] font-black text-black tracking-tight mb-1 leading-tight">Lumina 助手</h1>
+             <p className="text-slate-400 font-bold text-sm tracking-tight leading-snug">手动触发深度整理，将零散的想法转化为结构化洞察。</p>
           </div>
 
           <div className="space-y-4 mb-8">
              <PromptCard 
                title="AI 自动化规划" 
-               subtitle="分析全域碎片记录，一键生成任务象限看板。" 
+               subtitle="深度分析碎片记录，一键生成任务四象限看板。" 
                onClick={() => {
                    presenter.app.setCurrentView(AppView.PLANNING);
                    if (!planningData) presenter.ai.triggerOrganize();
@@ -158,8 +158,8 @@ const AppContent: React.FC = () => {
                ]}
              />
              <PromptCard 
-               title="生成深度周报" 
-               subtitle="深度回顾过去思维轨迹，提炼成长亮点与建议。" 
+               title="生成复盘报告" 
+               subtitle="回顾最近的思维轨迹，提炼成长亮点与建议。" 
                onClick={() => {
                     presenter.app.setCurrentView(AppView.REVIEW);
                     if (!reviewData) presenter.ai.triggerReview();
@@ -194,11 +194,11 @@ const AppContent: React.FC = () => {
                 <IconButton icon={<SparklesIcon />} label="灵感激发" size="sm" variant="tint" tooltipPos="top" />
                 <IconButton 
                   icon={<svg className="rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 19l7-7-7-7M5 12h14" /></svg>} 
-                  label="发送指令" 
+                  label="发送" 
                   variant="solid" 
                   size="sm" 
                   disabled={!assistantInput.trim()} 
-                  onClick={() => {/* AI 对话逻辑可以在此扩展 */}} 
+                  onClick={() => {/* 此处可扩展对话逻辑 */}} 
                 />
              </div>
           </div>
